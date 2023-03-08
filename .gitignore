@@ -10,3 +10,6 @@ secrets.auto.tfvars
 .vscode/
 .idea
 *.iml
+
+.structurizr
+docs/architecture/dsl/**/workspace.json
