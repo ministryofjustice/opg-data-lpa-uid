@@ -9,7 +9,7 @@ workspace {
         mrlpaService = softwareSystem "Make and Register an LPA" "Manages Online submissions of LPAs." "Existing System"
         lpaPublicAPI = softwareSystem "LPA Public API" "API Integration for external integration." "Existing System"
 
-        enterprise "Modernising Lasting Power of Attorney" {
+        enterprise "LPA ID Service" {
             lpaIDService = softwareSystem "LPA ID Service" "Generates IDs and stores donor details." {
                 iam = container "IAM" "Manages permissions to API Gateway" "AWS IAM" "Component"
                 certificateManager = container "Certificate Manager" "Generate a valid cert for SSL connectivity to the API" "AWS Certificate Manager" "Component"
