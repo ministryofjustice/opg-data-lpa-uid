@@ -1,20 +1,37 @@
 graph TB
   linkStyle default fill:#ffffff
 
-  subgraph diagram [opg-data-lpa-id - Containers]
+  subgraph diagram [LPA ID Service - Containers]
     style diagram fill:#ffffff,stroke:#ffffff
 
-    subgraph 2 [opg-data-lpa-id]
-      style 2 fill:#ffffff,stroke:#444444,color:#444444
+    4("<div style='font-weight: bold'>LPA Case Management</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>PKA Sirius.</div>")
+    style 4 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    5("<div style='font-weight: bold'>Make and Register an LPA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Manages Online submissions of<br />LPAs.</div>")
+    style 5 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    6("<div style='font-weight: bold'>LPA Public API</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>API Integration for external<br />integration.</div>")
+    style 6 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
-      3["<div style='font-weight: bold'>Web App</div><div style='font-size: 70%; margin-top: 0px'>[Container: Go, HTML, CSS, JS]</div><div style='font-size: 80%; margin-top:10px'>TBC</div>"]
-      style 3 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      4("<div style='font-weight: bold'>App</div><div style='font-size: 70%; margin-top: 0px'>[Container: Go, API Gateway]</div><div style='font-size: 80%; margin-top:10px'>TBC</div>")
-      style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      7[("<div style='font-weight: bold'>Database</div><div style='font-size: 70%; margin-top: 0px'>[Container: DynamoDB]</div><div style='font-size: 80%; margin-top:10px'>Stores actor information,<br />Draft LPA details, access<br />logs, etc.</div>")]
-      style 7 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    subgraph 7 [LPA ID Service]
+      style 7 fill:#ffffff,stroke:#444444,color:#444444
+
+      10("<div style='font-weight: bold'>DNS</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Route 53]</div><div style='font-size: 80%; margin-top:10px'>Generate a friendly DNS Name<br />for the API</div>")
+      style 10 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      11("<div style='font-weight: bold'>API Gateway</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS API Gateway v2, OpenAPI]</div><div style='font-size: 80%; margin-top:10px'>Provides a REST API for<br />communication to the service.</div>")
+      style 11 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      12("<div style='font-weight: bold'>Lambda</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Lambda, Go]</div><div style='font-size: 80%; margin-top:10px'>Executes code for generating<br />and returning new LPA ID</div>")
+      style 12 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      13[("<div style='font-weight: bold'>Database</div><div style='font-size: 70%; margin-top: 0px'>[Container: DynamoDB]</div><div style='font-size: 80%; margin-top:10px'>Stores LPA IDs.</div>")]
+      style 13 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      8("<div style='font-weight: bold'>IAM</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS IAM]</div><div style='font-size: 80%; margin-top:10px'>Manages permissions to API<br />Gateway</div>")
+      style 8 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      9("<div style='font-weight: bold'>Certificate Manager</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Certificate Manager]</div><div style='font-size: 80%; margin-top:10px'>Generate a valid cert for SSL<br />connectivity to the API</div>")
+      style 9 fill:#85bbf0,stroke:#5d82a8,color:#000000
     end
 
-    3-. "<div>Communicates with</div><div style='font-size: 70%'></div>" .->4
-    4-. "<div>Reads from and writes to</div><div style='font-size: 70%'></div>" .->7
+    11-. "<div>Forwards requests to and<br />Returns responses from</div><div style='font-size: 70%'></div>" .->12
+    11-. "<div>Validates requests</div><div style='font-size: 70%'></div>" .->8
+    12-. "<div>Queries and writes to</div><div style='font-size: 70%'></div>" .->13
+    4-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->11
+    5-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->11
+    6-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->11
   end
