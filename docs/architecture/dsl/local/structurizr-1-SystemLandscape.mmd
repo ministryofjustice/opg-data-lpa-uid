@@ -1,15 +1,8 @@
 graph TB
   linkStyle default fill:#ffffff
 
-  subgraph diagram [System Landscape for LPA ID Service]
+  subgraph diagram [System Landscape]
     style diagram fill:#ffffff,stroke:#ffffff
-
-    subgraph enterprise [LPA ID Service]
-      style enterprise fill:#ffffff,stroke:#444444,color:#444444
-
-      7("<div style='font-weight: bold'>LPA ID Service</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Generates IDs and stores<br />donor details.</div>")
-      style 7 fill:#1168bd,stroke:#0b4884,color:#ffffff
-    end
 
     1["<div style='font-weight: bold'>Case Worker (Frontend)</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Case worker creating new<br />cases for the Paper journey.</div>"]
     style 1 fill:#08427b,stroke:#052e56,color:#ffffff
@@ -23,6 +16,8 @@ graph TB
     style 5 fill:#999999,stroke:#6b6b6b,color:#ffffff
     6("<div style='font-weight: bold'>LPA Public API</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>API Integration for external<br />integration.</div>")
     style 6 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    7("<div style='font-weight: bold'>LPA ID Service</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Generates IDs and stores<br />donor details.</div>")
+    style 7 fill:#1168bd,stroke:#0b4884,color:#ffffff
 
     1-. "<div>Uses</div><div style='font-size: 70%'></div>" .->4
     2-. "<div>Uses</div><div style='font-size: 70%'></div>" .->5
