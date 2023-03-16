@@ -35,6 +35,7 @@ Eg: `M-3QT4-F65X-A7EJ`
 - We will only permit upto 2 letters maximum in sequence to prevent words within ID's, without enforcing a sequence of 2 letters, 2 numbers as this would again reduce the total possible combinations. We should include logic to count the number of letters in sequence and force a number to be picked as the 3rd character.
 - We will query the DB for the generated ID and regenerate upto a max number of attempts if it has been found to already exist. This is to ensure that ID's are unique.
 
+See PR for [example code generator](https://github.com/ministryofjustice/opg-data-lpa-id/pull/10) 
 
 ## Consequences
 
