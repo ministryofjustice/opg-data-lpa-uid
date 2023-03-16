@@ -1,0 +1,118 @@
+openapi: "3.0.2"
+info:
+  title: LPA ID Service
+  version: "1.0"
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+x-amazon-apigateway-policy:
+  Version: "2012-10-17"
+  Statement:
+    - Effect: Allow
+      Principal:
+        AWS: ${allowed_roles}
+      Action: "execute-api:Invoke"
+      Resource:
+        - ${lambda_invoke_arn}
+security:
+  - {}
+paths:
+  /cases:
+    post:
+      operationId: createCase
+      summary: Generate a case ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - source
+                - donor
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - "hw"
+                    - "pfa"
+                source:
+                  type: string
+                  enum:
+                    - "APPLICANT"
+                    - "PHONE"
+                donor:
+                  type: object
+                  required:
+                    - name
+                    - dob
+                    - postcode
+                  properties:
+                    name:
+                      type: string
+                      example: Jacalyn Petralba
+                    dob:
+                      type: string
+                      format: date
+                    postcode:
+                      type: string
+                      maxLength: 8
+                      example: EC1A 1BB
+              additionalProperties: false
+      responses:
+        "201":
+          description: Case created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    pattern: "ML-([A-Z0-9]{8})"
+                additionalProperties: false
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+      x-amazon-apigateway-integration:
+        uri: ${lambda_invoke_arn}
+        httpMethod: "POST"
+        type: "aws_proxy"
+        contentHandling: "CONVERT_TO_TEXT"
+components:
+  schemas:
+    AbstractError:
+      type: object
+      required:
+        - code
+        - detail
+      properties:
+        code:
+          type: string
+        detail:
+          type: string
+    BadRequestError:
+      allOf:
+        - $ref: "#/components/schemas/AbstractError"
+        - type: object
+          properties:
+            code:
+              enum: ["INVALID_REQUEST"]
+            errors:
+              type: array
+              items:
+                type: object
+                required:
+                  - source
+                properties:
+                  source:
+                    type: string
+                    format: jsonpointer
+                  detail:
+                    type: string
+              example:
+                - source: "/donor/dob"
+                  detail: "not in valid date format"
