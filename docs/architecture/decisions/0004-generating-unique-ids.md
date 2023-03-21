@@ -8,9 +8,9 @@ Accepted
 
 ## Context
 
-When users start an LPA either online or via the paper route, their data will be sent to and stored in this ID service data store. We need to create a unique ID to store alongside the user's data, which case workers can then use to find LPA's by when actioning any future enquiries or objections.
+When users start an LPA either online or via the paper route, their data will be sent to and stored in this service. We need to create a unique identifier/reference to store alongside the user's data, which case workers can then use to find LPA's by when actioning any future enquiries or objections.
 
-We must define the format and method of generating these IDs. This can change for private beta, but should preferably be something we don’t need to change until then.
+We must define the format and method of generating this unique identification. This can change for private beta, but should preferably be something we don’t need to change until then.
 
 Human-readable reference numbers are a better description rather than an IDs, as users may need to read them aloud over the phone or manually enter their reference number on the Use an LPA service. Therefore I will refer to them as reference numbers within this document. However they are not to be confused with the current LPA reference numbers in the format of 7000-0000-0000
 
@@ -24,9 +24,6 @@ For private beta (but not necessarily now) they also must:
 - Not be calculable (e.g. not a sequence) to avoid iteration based attacks.
 - Use the safe alphabet identified by Use an LPA `346789QWERTYUPADFGHJKLXCVBNM`. This is to avoid typographically similar letters such as i, l , and 1, making them more readable/usable for end users and avoid confusion.
 
-
-
-
 A problem that Use an LPA have experienced is words (particularly "bad" words) appearing within a reference number, ideally we would like a solution that prevents this.
 
 ## Decision
@@ -39,6 +36,7 @@ Eg: `M-3QT4-F65X-A7EJ`
 
 - We will only permit upto 2 letters maximum in sequence to prevent words within reference numbers, without enforcing a sequence of 2 letters, 2 numbers as this would again reduce the total possible combinations. We should include logic to count the number of letters in sequence and force a number to be picked as the 3rd character.
 - We will query the DB for the generated reference number and regenerate upto a max number of attempts if it has been found to already exist. This is to ensure that references are unique.
+- We will generate a checksum for the last character of the reference number to increase security by ensuring that it has not been modified. A checksum will also prevent human error when being transcribed over the phone or scanned in, as we will be able to validate the checksum before storing data or sending requests which will reduce unnecessary API calls.
 
 See PR for [example code generator](https://github.com/ministryofjustice/opg-data-lpa-id/pull/10) - NB: this solution was created prior discussion with my peers around the proposed solution, in which it was advised that we should not seed the generator ourselves.
 
