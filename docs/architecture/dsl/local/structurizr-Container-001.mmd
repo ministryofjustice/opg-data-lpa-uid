@@ -4,44 +4,34 @@ graph TB
   subgraph diagram [LPA UID Service - Containers]
     style diagram fill:#ffffff,stroke:#ffffff
 
-    18("<div style='font-weight: bold'>LPA Case Management</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>PKA Sirius.</div>")
-    style 18 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    19("<div style='font-weight: bold'>LPA Public API</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>API Integration for external<br />integration.</div>")
-    style 19 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    1["<div style='font-weight: bold'>Third Party Software</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>External API software<br />interacting with a Lasting<br />Power of Attorney.</div>"]
-    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
-    3["<div style='font-weight: bold'>Donor</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Donor drafting the Lasting<br />Power of Attorney.</div>"]
-    style 3 fill:#08427b,stroke:#052e56,color:#ffffff
-    5["<div style='font-weight: bold'>Case Worker</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Case worker.</div>"]
-    style 5 fill:#08427b,stroke:#052e56,color:#ffffff
     6("<div style='font-weight: bold'>Make and Register a Lasting Power of Attorney Online</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Allows users to draft a<br />Lasting Power of Attorney<br />online.</div>")
     style 6 fill:#1168bd,stroke:#0b4884,color:#ffffff
+    28("<div style='font-weight: bold'>LPA Case Management</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>PKA Sirius.</div>")
+    style 28 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    31("<div style='font-weight: bold'>LPA Public API</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>API Integration for external<br />integration.</div>")
+    style 31 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
-    subgraph 20 [LPA UID Service]
-      style 20 fill:#ffffff,stroke:#0b4884,color:#0b4884
+    subgraph 18 [LPA UID Service]
+      style 18 fill:#ffffff,stroke:#0b4884,color:#0b4884
 
-      21[("<div style='font-weight: bold'>Database</div><div style='font-size: 70%; margin-top: 0px'>[Container: DynamoDB]</div><div style='font-size: 80%; margin-top:10px'>Stores LPA IDs.</div>")]
-      style 21 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      22("<div style='font-weight: bold'>Lambda</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Lambda, Go]</div><div style='font-size: 80%; margin-top:10px'>Executes code for generating<br />and returning new LPA ID</div>")
+      19[("<div style='font-weight: bold'>Database</div><div style='font-size: 70%; margin-top: 0px'>[Container: DynamoDB]</div><div style='font-size: 80%; margin-top:10px'>Stores LPA IDs.</div>")]
+      style 19 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      20("<div style='font-weight: bold'>Lambda</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Lambda, Go]</div><div style='font-size: 80%; margin-top:10px'>Executes code for generating<br />and returning new LPA ID</div>")
+      style 20 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      22("<div style='font-weight: bold'>IAM</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS IAM]</div><div style='font-size: 80%; margin-top:10px'>Manages permissions to API<br />Gateway</div>")
       style 22 fill:#85bbf0,stroke:#5d82a8,color:#000000
-      24("<div style='font-weight: bold'>IAM</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS IAM]</div><div style='font-size: 80%; margin-top:10px'>Manages permissions to API<br />Gateway</div>")
+      23("<div style='font-weight: bold'>Certificate Manager</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Certificate Manager]</div><div style='font-size: 80%; margin-top:10px'>Generate a valid cert for SSL<br />connectivity to the API</div>")
+      style 23 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      24("<div style='font-weight: bold'>DNS</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Route 53]</div><div style='font-size: 80%; margin-top:10px'>Generate a friendly DNS Name<br />for the API</div>")
       style 24 fill:#85bbf0,stroke:#5d82a8,color:#000000
-      25("<div style='font-weight: bold'>Certificate Manager</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Certificate Manager]</div><div style='font-size: 80%; margin-top:10px'>Generate a valid cert for SSL<br />connectivity to the API</div>")
+      25("<div style='font-weight: bold'>API Gateway</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS API Gateway v2, OpenAPI]</div><div style='font-size: 80%; margin-top:10px'>Provides a REST API for<br />communication to the service.</div>")
       style 25 fill:#85bbf0,stroke:#5d82a8,color:#000000
-      26("<div style='font-weight: bold'>DNS</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Route 53]</div><div style='font-size: 80%; margin-top:10px'>Generate a friendly DNS Name<br />for the API</div>")
-      style 26 fill:#85bbf0,stroke:#5d82a8,color:#000000
-      27("<div style='font-weight: bold'>API Gateway</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS API Gateway v2, OpenAPI]</div><div style='font-size: 80%; margin-top:10px'>Provides a REST API for<br />communication to the service.</div>")
-      style 27 fill:#85bbf0,stroke:#5d82a8,color:#000000
     end
 
-    3-. "<div>Uses</div><div style='font-size: 70%'></div>" .->6
-    22-. "<div>Queries and writes to</div><div style='font-size: 70%'></div>" .->21
-    27-. "<div>Forwards requests to and<br />Returns responses from</div><div style='font-size: 70%'></div>" .->22
-    27-. "<div>Validates requests</div><div style='font-size: 70%'></div>" .->24
-    27-. "<div>Uses</div><div style='font-size: 70%'></div>" .->5
-    27-. "<div>Uses</div><div style='font-size: 70%'></div>" .->3
-    27-. "<div>Uses</div><div style='font-size: 70%'></div>" .->1
-    18-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->27
-    6-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->27
-    19-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->27
+    20-. "<div>Queries and writes to</div><div style='font-size: 70%'></div>" .->19
+    25-. "<div>Forwards requests to and<br />Returns responses from</div><div style='font-size: 70%'></div>" .->20
+    25-. "<div>Validates requests</div><div style='font-size: 70%'></div>" .->22
+    28-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->25
+    31-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->25
+    6-. "<div>Makes requests to</div><div style='font-size: 70%'></div>" .->25
   end
