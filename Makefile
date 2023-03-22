@@ -4,5 +4,5 @@ run-structurizr:
 
 run-structurizr-export:
 	docker pull structurizr/cli:latest
-	docker run --rm -v $(PWD)/dsl/poas:/usr/local/structurizr structurizr/cli \
+	docker run --rm -v $(PWD)/docs/architecture/dsl/local:/usr/local/structurizr structurizr/cli \
 	export -workspace /usr/local/structurizr/workspace.dsl -format mermaid
