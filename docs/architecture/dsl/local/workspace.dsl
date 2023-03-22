@@ -14,11 +14,6 @@ workspace {
     }
 
     views {
-        systemlandscape "SystemLandscape" {
-            include *
-            autoLayout
-        }
-
         systemContext lpaIDService "SystemContext" {
             include *
             autoLayout
