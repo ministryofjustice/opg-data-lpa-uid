@@ -1,4 +1,4 @@
-lpaIDService = softwareSystem "LPA ID Service" "Generates IDs and stores donor details." {
+lpaUIDService = softwareSystem "LPA UID Service" "Generates IDs and stores donor details." {
     database = container "Database" "Stores LPA IDs." "DynamoDB" "Database"
     lambda = container "Lambda" "Executes code for generating and returning new LPA ID" "AWS Lambda, Go" "Component" {
         -> database "Queries and writes to"
@@ -9,6 +9,9 @@ lpaIDService = softwareSystem "LPA ID Service" "Generates IDs and stores donor d
     apiGateway = container "API Gateway" "Provides a REST API for communication to the service." "AWS API Gateway v2, OpenAPI" "Component" {
         -> lambda "Forwards requests to and Returns responses from"
         -> iam "Validates requests"
+        -> caseWorker "Uses"
+        -> donor "Uses"
+        -> thirdparty "Uses"
     }
 
 }
