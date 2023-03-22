@@ -9,6 +9,9 @@ lpaIDService = softwareSystem "LPA ID Service" "Generates IDs and stores donor d
     apiGateway = container "API Gateway" "Provides a REST API for communication to the service." "AWS API Gateway v2, OpenAPI" "Component" {
         -> lambda "Forwards requests to and Returns responses from"
         -> iam "Validates requests"
+        -> caseWorker "Uses"
+        -> donor "Uses"
+        -> thirdparty "Uses"
     }
 
 }
