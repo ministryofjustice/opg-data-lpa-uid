@@ -14,12 +14,12 @@ workspace {
     }
 
     views {
-        systemContext lpaIDService "SystemContext" {
+        systemContext lpaUIDService "SystemContext" {
             include *
             autoLayout
         }
 
-        container lpaIDService {
+        container lpaUIDService {
             include *
             autoLayout
         }

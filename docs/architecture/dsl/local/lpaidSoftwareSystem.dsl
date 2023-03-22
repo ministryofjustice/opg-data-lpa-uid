@@ -1,4 +1,4 @@
-lpaIDService = softwareSystem "LPA ID Service" "Generates IDs and stores donor details." {
+lpaUIDService = softwareSystem "LPA UID Service" "Generates IDs and stores donor details." {
     database = container "Database" "Stores LPA IDs." "DynamoDB" "Database"
     lambda = container "Lambda" "Executes code for generating and returning new LPA ID" "AWS Lambda, Go" "Component" {
         -> database "Queries and writes to"
