@@ -1,17 +1,26 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 var rPath = regexp.MustCompile("/2015-03-31/functions/([a-z-]+)/invocations")
 
 var lambdaMap = map[string]string{
 	"lpa-uid-default": "lambda-create-case",
+}
+
+type ApiGatewayResponse struct {
+	IsBase64Encoded bool        `json:"isBase64Encoded"`
+	StatusCode      int         `json:"statusCode"`
+	Headers         http.Header `json:"headers"`
+	Body            string      `json:"body"`
 }
 
 func delegateHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,15 +61,19 @@ func delegateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		for k, vv := range resp.Header {
-			for _, v := range vv {
-				w.Header().Add(k, v)
-			}
+		body := new(strings.Builder)
+		_, _ = io.Copy(body, resp.Body)
+
+		out := ApiGatewayResponse{
+			IsBase64Encoded: false,
+			StatusCode:      resp.StatusCode,
+			Headers:         resp.Header,
+			Body:            body.String(),
 		}
 
-		w.WriteHeader(resp.StatusCode)
-		io.Copy(w, resp.Body)
-		resp.Body.Close()
+		jsonOut, _ := json.Marshal(out)
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonOut)
 	} else {
 		http.Error(w, fmt.Sprintf("couldn't match URL: %s", r.URL.Path), http.StatusInternalServerError)
 	}

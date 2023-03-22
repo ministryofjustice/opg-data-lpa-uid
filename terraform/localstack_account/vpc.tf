@@ -1,7 +1,7 @@
 resource "aws_subnet" "private" {
-  vpc_id                          = aws_vpc.main.id
-  cidr_block                      = aws_vpc.main.cidr_block
-  availability_zone               = "${data.aws_region.current.name}a"
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = aws_vpc.main.cidr_block
+  availability_zone = "${data.aws_region.current.name}a"
 
   tags = {
     Private = "true"
