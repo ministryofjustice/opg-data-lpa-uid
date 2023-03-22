@@ -1,3 +1,12 @@
+up:
+	docker-compose build lambda-create-case
+	docker-compose up -d localstack
+
+	cd terraform/localstack_account && tflocal init
+	cd terraform/localstack_account && tflocal apply -auto-approve
+	cd terraform/environment && tflocal init
+	cd terraform/environment && tflocal apply -auto-approve
+
 run-structurizr:
 	docker pull structurizr/lite
 	docker run -it --rm -p 8080:8080 -v $(PWD)/docs/architecture/dsl/local:/usr/local/structurizr structurizr/lite
