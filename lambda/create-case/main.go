@@ -7,14 +7,14 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-type MyResponse struct {
+type Response struct {
 	Message string `json:"message"`
 }
 
 type Lambda struct{}
 
-func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (MyResponse, error) {
-	return MyResponse{Message: fmt.Sprintf("you sent body: %s", event.Body)}, nil
+func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (Response, error) {
+	return Response{Message: fmt.Sprintf("you sent body: %s", event.Body)}, nil
 }
 
 func main() {

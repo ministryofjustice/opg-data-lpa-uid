@@ -8,13 +8,11 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/aws/aws-lambda-go/events"
 )
 
-var rPath = regexp.MustCompile("/2015-03-31/functions/([a-z-]+)/invocations")
-
-var lambdaMap = map[string]string{
-	"lpa-uid-default": "lambda-create-case",
-}
+var rPath = regexp.MustCompile("/2015-03-31/functions/lpa-uid-([a-z-]+)-local/invocations")
 
 type ApiGatewayResponse struct {
 	IsBase64Encoded bool        `json:"isBase64Encoded"`
@@ -31,18 +29,9 @@ func delegateHandler(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("function name: %s", lambdaName)
 
-		container := lambdaMap[lambdaName]
-		if container == "" {
-			http.Error(w, fmt.Sprintf("could not find container for %s", lambdaName), http.StatusInternalServerError)
-			return
-		}
-
-		log.Printf("forwarding to: %s", container)
-
 		// aws-lambda-rie requires the function to be called "function"
-		url := fmt.Sprintf("http://%s:8080/2015-03-31/functions/function/invocations", container)
+		url := fmt.Sprintf("http://lambda-%s:8080/2015-03-31/functions/function/invocations", lambdaName)
 		proxyReq, err := http.NewRequest(r.Method, url, r.Body)
-		log.Print(proxyReq)
 		if err != nil {
 			log.Printf("error: couldn't create proxy request")
 		}
@@ -64,11 +53,11 @@ func delegateHandler(w http.ResponseWriter, r *http.Request) {
 		body := new(strings.Builder)
 		_, _ = io.Copy(body, resp.Body)
 
-		out := ApiGatewayResponse{
-			IsBase64Encoded: false,
-			StatusCode:      resp.StatusCode,
-			Headers:         resp.Header,
-			Body:            body.String(),
+		out := events.APIGatewayProxyResponse{
+			IsBase64Encoded:   false,
+			StatusCode:        resp.StatusCode,
+			MultiValueHeaders: resp.Header,
+			Body:              body.String(),
 		}
 
 		jsonOut, _ := json.Marshal(out)
