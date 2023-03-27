@@ -5,15 +5,6 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-x-amazon-apigateway-policy:
-  Version: "2012-10-17"
-  Statement:
-    - Effect: Allow
-      Principal:
-        AWS: ${allowed_roles}
-      Action: "execute-api:Invoke"
-      Resource:
-        - ${lambda_invoke_arn}
 security:
   - {}
 paths:
@@ -77,8 +68,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
+      x-amazon-apigateway-policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: ${allowed_roles}
+            Action: "execute-api:Invoke"
+            Resource:
+              - ${create_case_lambda_invoke_arn}
       x-amazon-apigateway-integration:
-        uri: ${lambda_invoke_arn}
+        uri: ${create_case_lambda_invoke_arn}
         httpMethod: "POST"
         type: "aws_proxy"
         contentHandling: "CONVERT_TO_TEXT"
