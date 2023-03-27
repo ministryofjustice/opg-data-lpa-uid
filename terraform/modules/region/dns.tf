@@ -1,8 +1,8 @@
 //===== Reference Zones from management =====
 
 data "aws_route53_zone" "service" {
-  name     = "lpa-uid.api.opg.service.justice.gov.uk."
-  # provider = aws.management
+  name     = "lpa-uid.api.opg.service.justice.gov.uk"
+  provider = aws.management
 }
 
 //===== Create certificates for sub domains =====
@@ -22,7 +22,7 @@ resource "aws_route53_record" "validation" {
   zone_id  = data.aws_route53_zone.service.id
   records  = [sort(aws_acm_certificate.environment.domain_validation_options[*].resource_record_value)[0]]
   ttl      = 60
-  # provider = aws.management
+  provider = aws.management
 }
 
 //===== Create A records =====
@@ -31,7 +31,7 @@ resource "aws_route53_record" "environment_record" {
   name     = local.a_record
   type     = "A"
   zone_id  = data.aws_route53_zone.service.id
-  # provider = aws.management
+  provider = aws.management
 
   alias {
     evaluate_target_health = true

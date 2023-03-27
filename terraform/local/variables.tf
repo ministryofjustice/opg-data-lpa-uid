@@ -1,14 +1,14 @@
 locals {
   default_tags     = merge(local.mandatory_moj_tags, local.optional_tags)
-  environment      = contains(keys(var.environments), terraform.workspace) ? var.environments[terraform.workspace] : var.environments["default"]
-  environment_name = element(split("_", terraform.workspace), 0)
-  is_local         = terraform.workspace == "local"
+  environment      = var.environments["local"]
+  environment_name = "local"
+  is_local         = true
   mandatory_moj_tags = {
     business-unit    = "OPG"
     application      = "LPA UID Service"
     account          = local.environment.account_name
     environment-name = local.environment_name
-    is-production    = terraform.workspace == "production" ? true : false
+    is-production    = false
     owner            = "opgteam@digital.justice.gov.uk"
   }
 

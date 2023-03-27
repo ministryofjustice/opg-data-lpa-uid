@@ -17,6 +17,6 @@ data "aws_subnets" "private" {
 data "aws_vpc" "sirius" {
   filter {
     name   = "tag:Name"
-    values = ["vpc.${data.aws_region.current.name}.${local.environment.account_name}.sirius.opg.service.justice.gov.uk"]
+    values = ["vpc.${data.aws_region.current.name}.${var.environment.account_name}.sirius.opg.service.justice.gov.uk"]
   }
 }

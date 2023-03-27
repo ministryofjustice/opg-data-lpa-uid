@@ -1,20 +1,19 @@
 SHELL = '/bin/bash'
-export TF_WORKSPACE ?= local
 
 up:
 	docker-compose build lambda-create-case
 	docker-compose up -d localstack
 
-	cd terraform/localstack_account && tflocal init
-	cd terraform/localstack_account && tflocal apply -auto-approve
-	cd terraform/environment && tflocal init
-	cd terraform/environment && tflocal apply -auto-approve
+	cd terraform/local && terraform init
+	cd terraform/local && terraform apply -auto-approve
 
 test:
-	cd terraform/environment && curl -XPOST $$(TF_WORKSPACE=local tflocal output -raw api_stage_uri)cases -d 'test'
+	cd terraform/local && curl -XPOST $$(terraform output -raw api_stage_uri)cases -d 'test'
 
 down:
 	docker-compose down
+	rm -rf terraform/local/terraform.state.d
+	rm -f terraform/local/terraform.state
 
 run-structurizr:
 	docker pull structurizr/lite
