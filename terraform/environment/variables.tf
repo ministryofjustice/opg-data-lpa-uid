@@ -30,3 +30,7 @@ variable "environments" {
 variable "default_role" {
   default = "operator"
 }
+
+variable "management_role" {
+  default = "lpa-uid-ci"
+}

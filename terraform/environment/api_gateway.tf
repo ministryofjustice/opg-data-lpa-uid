@@ -80,3 +80,20 @@ resource "aws_cloudwatch_log_group" "lpa_uid" {
 output "api_stage_uri" {
   value = local.is_local ? "http://${aws_api_gateway_rest_api.lpa_uid.id}.execute-api.localhost.localstack.cloud:4566/${aws_api_gateway_stage.current.stage_name}/" : aws_api_gateway_stage.current.invoke_url
 }
+
+resource "aws_api_gateway_domain_name" "lpa_uid" {
+  domain_name              = trimsuffix(local.a_record, ".")
+  regional_certificate_arn = aws_acm_certificate.environment.arn
+  security_policy          = "TLS_1_2"
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+}
+
+resource "aws_api_gateway_base_path_mapping" "mapping" {
+  api_id      = aws_api_gateway_rest_api.lpa_uid.id
+  stage_name  = aws_api_gateway_deployment.lpa_uid.stage_name
+  domain_name = aws_api_gateway_domain_name.lpa_uid.domain_name
+  base_path   = aws_api_gateway_deployment.lpa_uid.stage_name
+}
