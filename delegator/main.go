@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-var rPath = regexp.MustCompile("/2015-03-31/functions/lpa-uid-([a-z-]+)-local/invocations")
+var rPath = regexp.MustCompile("/2015-03-31/functions/lpa-uid-([a-z-]+)-local-eu-west-1/invocations")
 
 type ApiGatewayResponse struct {
 	IsBase64Encoded bool        `json:"isBase64Encoded"`
