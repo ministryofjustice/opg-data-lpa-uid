@@ -1,10 +1,6 @@
 module "eu-west-1" {
-  source = "../modules/region"
-  depends_on = [
-    aws_subnet.private,
-    aws_vpc.main,
-    aws_route53_zone.service
-  ]
+  source     = "../modules/region"
+  depends_on = [module.local_setup]
 
   environment_name = local.environment_name
   environment      = local.environment
