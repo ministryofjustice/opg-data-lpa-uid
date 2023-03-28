@@ -24,15 +24,13 @@ services:
     entrypoint: /var/task/main
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:1.4
     depends_on: [delegator]
     ports:
       - "4566:4566"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
-      DEFAULT_REGION: eu-west-1
-      PROVIDER_OVERRIDE_LAMBDA: legacy
       LAMBDA_FORWARD_URL: http://delegator:8080
       DOCKER_HOST: unix:///var/run/docker.sock
     healthcheck:
