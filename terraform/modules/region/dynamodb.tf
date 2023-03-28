@@ -11,6 +11,6 @@ resource "aws_dynamodb_table" "lpa_uid" {
   }
 
   point_in_time_recovery {
-    enabled = true
+    enabled = !var.is_local
   }
 }
