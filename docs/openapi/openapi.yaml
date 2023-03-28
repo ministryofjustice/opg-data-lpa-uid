@@ -61,6 +61,7 @@ paths:
                   id:
                     type: string
                     pattern: "MTEST-([346789QWERTYUPADFGHJKLXCVBNM]{4})-([346789QWERTYUPADFGHJKLXCVBNM]{4})-([346789QWERTYUPADFGHJKLXCVBNM]{4})"
+                    example: MTEST-789Q-P4DF-4UX3
                 additionalProperties: false
         "400":
           description: Invalid request
