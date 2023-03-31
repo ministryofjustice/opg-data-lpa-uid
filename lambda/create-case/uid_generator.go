@@ -41,7 +41,11 @@ func generateUID() (string, error) {
 
 	checksum := generateChecksum(uid)
 
-	return "MTEST" + uid + checksum, nil
+	return "MTEST-" + hyphenateUID(uid+checksum), nil
+}
+
+func hyphenateUID(uid string) string {
+	return uid[:4] + "-" + uid[4:8] + "-" + uid[8:]
 }
 
 func generateChecksum(uid string) string {

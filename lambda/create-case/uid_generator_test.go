@@ -10,7 +10,7 @@ func TestGenerateUID(t *testing.T) {
 	uid, err := generateUID()
 	assert.Nil(t, err)
 
-	m, err := regexp.Match(`^MTEST[346789QWERTYUPADFGHJKLXCVBNM]{12}$`, []byte(uid))
+	m, err := regexp.Match(`^MTEST-[346789QWERTYUPADFGHJKLXCVBNM]{4}(?:-[346789QWERTYUPADFGHJKLXCVBNM]{4}){2}$`, []byte(uid))
 	assert.Nil(t, err)
 	assert.True(t, m)
 }
@@ -50,4 +50,8 @@ func TestValidateChecksum(t *testing.T) {
 			assert.Equal(t, tt.expected, validateChecksum(tt.uid))
 		})
 	}
+}
+
+func TestHypenateUID(t *testing.T) {
+	assert.Equal(t, "FH4D-E694-A8LC", hyphenateUID("FH4DE694A8LC"))
 }
