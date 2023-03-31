@@ -7,8 +7,10 @@ up:
 	cd terraform/local && terraform init
 	cd terraform/local && terraform apply -auto-approve
 
-test:
+test-api:
 	cd terraform/local && curl -XPOST $$(terraform output -raw api_stage_uri)cases -d 'test'
+
+test:
 	go test ./lambda/create-case/...
 
 down:
