@@ -9,6 +9,7 @@ up:
 
 test:
 	cd terraform/local && curl -XPOST $$(terraform output -raw api_stage_uri)cases -d 'test'
+	go test ./lambda/create-case/...
 
 down:
 	docker-compose down
