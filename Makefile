@@ -8,7 +8,7 @@ up:
 	cd terraform/local && terraform apply -auto-approve
 
 test-api:
-	cd terraform/local && curl -XPOST $$(terraform output -raw api_stage_uri)cases -d 'test'
+	cd terraform/local && curl -XPOST $$(terraform output -raw api_stage_uri)cases -H 'Content-type:application/json' -d '{"source":"APPLICANT"}'
 
 test:
 	go test ./lambda/create-case/...
