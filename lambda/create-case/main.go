@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -57,6 +57,7 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	err := json.Unmarshal([]byte(event.Body), &data)
 
 	if err != nil {
+		log.Print(err)
 		return ProblemInvalidRequest.Respond()
 	}
 
@@ -70,11 +71,17 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 
 	// generate uid
 	data.CreatedAt = time.Now()
-	data.Uid = "TMP-" + strconv.FormatInt(time.Now().Unix(), 36)
+	data.Uid, err = generateUID()
+
+	if err != nil {
+		log.Print(err)
+		return ProblemInternalServerError.Respond()
+	}
 
 	// save to dynamodb
 	item, err := dynamodbattribute.MarshalMap(data)
 	if err != nil {
+		log.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
 
@@ -84,15 +91,17 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	})
 
 	if err != nil {
+		log.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
 
 	// respond
-	response := Response{Uid: data.Uid}
+	response := Response{Uid: hyphenateUID(data.Uid)}
 
 	body, err := json.Marshal(response)
 
 	if err != nil {
+		log.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
 
@@ -100,6 +109,12 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 		StatusCode: 200,
 		Body:       string(body),
 	}, nil
+}
+
+func hyphenateUID(uid string) string {
+	offset := len(UID_PREFIX)
+
+	return uid[0:offset] + uid[offset:offset+4] + "-" + uid[offset+4:offset+8] + "-" + uid[offset+8:]
 }
 
 func main() {
