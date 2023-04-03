@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -44,7 +45,7 @@ func delegateHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write(body)
 	} else {
-		http.Error(w, fmt.Sprintf("couldn't match URL: %s", r.URL.Path), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("couldn't match URL: %s", html.EscapeString(r.URL.Path)), http.StatusInternalServerError)
 	}
 }
 
