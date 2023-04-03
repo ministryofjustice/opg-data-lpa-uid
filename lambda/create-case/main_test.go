@@ -152,7 +152,7 @@ func TestHandleEventSuccess(t *testing.T) {
 		},
 	}))
 
-	assert.Equal(t, 200, resp.StatusCode)
+	assert.Equal(t, 201, resp.StatusCode)
 	assert.Nil(t, err)
 
 	var response Response

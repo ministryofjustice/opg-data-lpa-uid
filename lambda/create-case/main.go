@@ -106,7 +106,7 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	}
 
 	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
+		StatusCode: 201,
 		Body:       string(body),
 	}, nil
 }
