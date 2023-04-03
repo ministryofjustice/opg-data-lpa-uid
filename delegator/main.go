@@ -1,25 +1,15 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
+	"html"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
-	"strings"
-
-	"github.com/aws/aws-lambda-go/events"
 )
 
 var rPath = regexp.MustCompile("/2015-03-31/functions/lpa-uid-([a-z-]+)-local-eu-west-1/invocations")
-
-type ApiGatewayResponse struct {
-	IsBase64Encoded bool        `json:"isBase64Encoded"`
-	StatusCode      int         `json:"statusCode"`
-	Headers         http.Header `json:"headers"`
-	Body            string      `json:"body"`
-}
 
 func delegateHandler(w http.ResponseWriter, r *http.Request) {
 	if rPath.MatchString(r.URL.Path) && r.Method == "POST" {
@@ -50,21 +40,12 @@ func delegateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		body := new(strings.Builder)
-		_, _ = io.Copy(body, resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body)
 
-		out := events.APIGatewayProxyResponse{
-			IsBase64Encoded:   false,
-			StatusCode:        resp.StatusCode,
-			MultiValueHeaders: resp.Header,
-			Body:              body.String(),
-		}
-
-		jsonOut, _ := json.Marshal(out)
 		w.WriteHeader(http.StatusOK)
-		w.Write(jsonOut)
+		w.Write(body)
 	} else {
-		http.Error(w, fmt.Sprintf("couldn't match URL: %s", r.URL.Path), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("couldn't match URL: %s", html.EscapeString(r.URL.Path)), http.StatusInternalServerError)
 	}
 }
 
