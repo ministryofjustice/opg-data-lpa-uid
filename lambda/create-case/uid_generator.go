@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const UID_PREFIX = "MTEST-"
+
 var AllChars = []string{"3", "4", "6", "7", "8", "9", "Q", "W", "E", "R", "T", "Y", "U", "P", "A", "D", "F", "G", "H", "J", "K", "L", "X", "C", "V", "B", "N", "M"}
 var N = float64(len(AllChars))
 
@@ -41,11 +43,7 @@ func generateUID() (string, error) {
 
 	checksum := generateChecksum(uid)
 
-	return "MTEST-" + hyphenateUID(uid+checksum), nil
-}
-
-func hyphenateUID(uid string) string {
-	return uid[:4] + "-" + uid[4:8] + "-" + uid[8:]
+	return UID_PREFIX + uid + checksum, nil
 }
 
 func generateChecksum(uid string) string {

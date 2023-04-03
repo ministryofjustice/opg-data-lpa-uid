@@ -58,7 +58,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  uid:
                     type: string
                     pattern: "MTEST-([346789QWERTYUPADFGHJKLXCVBNM]{4})-([346789QWERTYUPADFGHJKLXCVBNM]{4})-([346789QWERTYUPADFGHJKLXCVBNM]{4})"
                     example: MTEST-789Q-P4DF-4UX3
