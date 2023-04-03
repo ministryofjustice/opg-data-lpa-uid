@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-We need some OPG services to be able to communicate with the LPA ID Service, whilst ensuring that it is protected from unauthorised requests.
+We need some OPG services to be able to communicate with the LPA UID Service, whilst ensuring that it is protected from unauthorised requests.
 
 ## Decision
 

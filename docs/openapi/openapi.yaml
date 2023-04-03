@@ -1,6 +1,6 @@
 openapi: "3.0.2"
 info:
-  title: LPA ID Service
+  title: LPA UID Service
   version: "1.0"
   license:
     name: MIT
@@ -11,7 +11,7 @@ paths:
   /cases:
     post:
       operationId: createCase
-      summary: Generate a case ID
+      summary: Generate a case UID
       requestBody:
         content:
           application/json:
@@ -108,6 +108,7 @@ components:
                 type: object
                 required:
                   - source
+                  - detail
                 properties:
                   source:
                     type: string
@@ -116,4 +117,4 @@ components:
                     type: string
               example:
                 - source: "/donor/dob"
-                  detail: "not in valid date format"
+                  detail: "must match format YYYY-MM-DD"
