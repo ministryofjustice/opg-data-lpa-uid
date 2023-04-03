@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         language: ["go"]
+        directory: ["delegator", "lambda/create-case"]
 
     steps:
       - name: Checkout repository
@@ -31,6 +32,8 @@ jobs:
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
+        with:
+          working-directory: ${{ matrix.directory }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
