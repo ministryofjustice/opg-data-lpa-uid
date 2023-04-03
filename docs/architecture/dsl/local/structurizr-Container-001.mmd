@@ -14,9 +14,9 @@ graph TB
     subgraph 18 [LPA UID Service]
       style 18 fill:#ffffff,stroke:#0b4884,color:#0b4884
 
-      19[("<div style='font-weight: bold'>Database</div><div style='font-size: 70%; margin-top: 0px'>[Container: DynamoDB]</div><div style='font-size: 80%; margin-top:10px'>Stores LPA IDs.</div>")]
+      19[("<div style='font-weight: bold'>Database</div><div style='font-size: 70%; margin-top: 0px'>[Container: DynamoDB]</div><div style='font-size: 80%; margin-top:10px'>Stores LPA UIDs.</div>")]
       style 19 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      20("<div style='font-weight: bold'>Lambda</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Lambda, Go]</div><div style='font-size: 80%; margin-top:10px'>Executes code for generating<br />and returning new LPA ID</div>")
+      20("<div style='font-weight: bold'>Lambda</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS Lambda, Go]</div><div style='font-size: 80%; margin-top:10px'>Executes code for generating<br />and returning new LPA UID</div>")
       style 20 fill:#85bbf0,stroke:#5d82a8,color:#000000
       22("<div style='font-weight: bold'>IAM</div><div style='font-size: 70%; margin-top: 0px'>[Container: AWS IAM]</div><div style='font-size: 80%; margin-top:10px'>Manages permissions to API<br />Gateway</div>")
       style 22 fill:#85bbf0,stroke:#5d82a8,color:#000000

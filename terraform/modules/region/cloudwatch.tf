@@ -5,7 +5,7 @@ resource "aws_cloudwatch_log_group" "lambda" {
 }
 
 resource "aws_kms_key" "cloudwatch_standard" {
-  description             = "LPA ID Generation Service ${local.environment_name} Cloudwatch"
+  description             = "LPA UID Generation Service ${local.environment_name} Cloudwatch"
   deletion_window_in_days = 10
   enable_key_rotation     = true
   policy                  = data.aws_iam_policy_document.cloudwatch_kms.json
