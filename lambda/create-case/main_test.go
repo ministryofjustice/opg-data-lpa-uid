@@ -23,6 +23,14 @@ func (m *mockDynamoDB) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemO
 	return &dynamodb.PutItemOutput{}, args.Error(0)
 }
 
+type mockLogger struct {
+	mock.Mock
+}
+
+func (m *mockLogger) Print(content ...interface{}) {
+	m.Called(content)
+}
+
 func generateProxyRequest(request Request) events.APIGatewayProxyRequest {
 	encoded, _ := json.Marshal(request)
 
@@ -32,7 +40,12 @@ func generateProxyRequest(request Request) events.APIGatewayProxyRequest {
 }
 
 func TestHandleEventErrorIfBadBody(t *testing.T) {
-	l := Lambda{}
+	logger := &mockLogger{}
+	logger.On("Print", mock.Anything)
+
+	l := Lambda{
+		logger: logger,
+	}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: "bad body",
@@ -162,13 +175,20 @@ func TestHandleEventSuccess(t *testing.T) {
 }
 
 func TestHandleEventSaveError(t *testing.T) {
+	err := errors.New(("an error"))
+
 	mDdb := new(mockDynamoDB)
+
+	logger := &mockLogger{}
+	logger.On("Print", mock.Anything)
+
 	l := Lambda{
 		ddb:       mDdb,
 		tableName: "my-table",
+		logger:    logger,
 	}
 
-	mDdb.On("PutItem", "my-table", mock.Anything).Return(errors.New(("an error")))
+	mDdb.On("PutItem", "my-table", mock.Anything).Return(err)
 
 	resp, err := l.HandleEvent(generateProxyRequest(Request{
 		Type:   "hw",

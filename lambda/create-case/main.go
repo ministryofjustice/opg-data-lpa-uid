@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/ministryofjustice/opg-go-common/logging"
 )
 
 type LpaType string
@@ -47,9 +47,14 @@ type Response struct {
 	Uid string `json:"uid"`
 }
 
+type Logger interface {
+	Print(...interface{})
+}
+
 type Lambda struct {
 	ddb       dynamodbiface.DynamoDBAPI
 	tableName string
+	logger    Logger
 }
 
 func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -57,7 +62,7 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	err := json.Unmarshal([]byte(event.Body), &data)
 
 	if err != nil {
-		log.Print(err)
+		l.logger.Print(err)
 		return ProblemInvalidRequest.Respond()
 	}
 
@@ -74,14 +79,14 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	data.Uid, err = generateUID()
 
 	if err != nil {
-		log.Print(err)
+		l.logger.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
 
 	// save to dynamodb
 	item, err := dynamodbattribute.MarshalMap(data)
 	if err != nil {
-		log.Print(err)
+		l.logger.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
 
@@ -91,7 +96,7 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	})
 
 	if err != nil {
-		log.Print(err)
+		l.logger.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
 
@@ -101,7 +106,7 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	body, err := json.Marshal(response)
 
 	if err != nil {
-		log.Print(err)
+		l.logger.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
 
@@ -126,6 +131,7 @@ func main() {
 	l := &Lambda{
 		ddb:       dynamodb.New(sess),
 		tableName: os.Getenv("AWS_DYNAMODB_TABLE_NAME"),
+		logger:    logging.New(os.Stdout, "opg-data-lpa-uid"),
 	}
 
 	lambda.Start(l.HandleEvent)
