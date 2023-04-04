@@ -16,4 +16,26 @@ data "aws_iam_policy_document" "lambda" {
       "logs:DescribeLogStreams"
     ]
   }
+  statement {
+    sid       = "allowDynamoAccess"
+    effect    = "Allow"
+    resources = [var.is_primary ? aws_dynamodb_table.lpa_uid[0].arn : aws_dynamodb_table_replica.lpa_uid[0].arn]
+    actions = [
+      "dynamodb:BatchGetItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeTable",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:UpdateItem",
+      "dynamodb:UpdateTable",
+    ]
+  }
+  statement {
+    effect    = "Allow"
+    sid       = "ListTables"
+    resources = ["*"]
+    actions   = ["dynamodb:ListTables"]
+  }
 }

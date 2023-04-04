@@ -9,7 +9,7 @@ import (
 	"regexp"
 )
 
-var rPath = regexp.MustCompile("/2015-03-31/functions/lpa-uid-([a-z-]+)-local-eu-west-1/invocations")
+var rPath = regexp.MustCompile("/2015-03-31/functions/lpa-uid-([a-z-]+)-local-eu-west-([1|2]{1})/invocations")
 
 func delegateHandler(w http.ResponseWriter, r *http.Request) {
 	if rPath.MatchString(r.URL.Path) && r.Method == "POST" {
