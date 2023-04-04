@@ -227,12 +227,11 @@ provider "aws" {
     xray                     = "http://localhost:4566"
   }
 }
-
 provider "aws" {
   access_key                  = "test"
-  alias                       = "management"
+  alias                       = "eu-west-2"
   secret_key                  = "test"
-  region                      = "eu-west-1"
+  region                      = "eu-west-2"
   s3_use_path_style           = false
   skip_credentials_validation = true
   skip_metadata_api_check     = true
@@ -338,10 +337,17 @@ provider "aws" {
   }
 }
 
+provider "aws" {
+  access_key                  = "test"
+  alias                       = "management"
+  secret_key                  = "test"
+  region                      = "eu-west-1"
+  s3_use_path_style           = false
+  skip_credentials_validation = true
+  skip_metadata_api_check     = true
+  skip_requesting_account_id  = true
 
-
-locals {
-  endpoints = {
+  endpoints {
     acm                      = "http://localhost:4566"
     amplify                  = "http://localhost:4566"
     apigateway               = "http://localhost:4566"

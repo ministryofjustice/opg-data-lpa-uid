@@ -1,12 +1,12 @@
 terraform {
-    backend "s3" {
-      bucket         = "opg.terraform.state"
-      key            = "opg-data-lpa-uid/terraform.tfstate"
-      encrypt        = true
-      region         = "eu-west-1"
-      role_arn       = "arn:aws:iam::311462405659:role/sirius-ci"
-      dynamodb_table = "remote_lock"
-    }
+  backend "s3" {
+    bucket         = "opg.terraform.state"
+    key            = "opg-data-lpa-uid/terraform.tfstate"
+    encrypt        = true
+    region         = "eu-west-1"
+    role_arn       = "arn:aws:iam::311462405659:role/sirius-ci"
+    dynamodb_table = "remote_lock"
+  }
 
   required_providers {
     aws = {
@@ -18,7 +18,7 @@ terraform {
 }
 
 provider "aws" {
-  alias = "global"
+  alias  = "global"
   region = "eu-west-1"
 
   assume_role {
@@ -32,7 +32,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias = "eu-west-1"
+  alias  = "eu-west-1"
   region = "eu-west-1"
 
   assume_role {

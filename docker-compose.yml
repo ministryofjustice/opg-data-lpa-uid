@@ -10,7 +10,7 @@ services:
     environment:
       AWS_REGION: eu-west-1
       AWS_DYNAMODB_ENDPOINT: http://localstack:4566
-      AWS_DYNAMODB_TABLE_NAME: lpa-uid-local-eu-west-1
+      AWS_DYNAMODB_TABLE_NAME: lpa-uid-local
       AWS_ACCESS_KEY_ID: localstack
       AWS_SECRET_ACCESS_KEY: localstack
     volumes:
