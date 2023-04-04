@@ -1,6 +1,6 @@
 resource "aws_dynamodb_table" "lpa_uid" {
   count        = var.is_primary ? 1 : 0
-  name         = "lpa-uid-${local.environment_name}"
+  name         = "lpa-uid-${var.environment_name}"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "uid"
 
@@ -19,10 +19,15 @@ resource "aws_dynamodb_table" "lpa_uid" {
     enabled     = true
     kms_key_arn = aws_kms_key.dynamodb.arn
   }
+
+  lifecycle {
+    ignore_changes = [
+      replica
+    ]
+  }
 }
 
-
-resource "aws_dynamodb_table_replica" "example" {
+resource "aws_dynamodb_table_replica" "lpa_uid" {
   count = var.is_primary ? 0 : 1
 
   global_table_arn       = var.dynamodb_primary_arn

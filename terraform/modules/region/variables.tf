@@ -2,6 +2,10 @@ variable "dynamodb_primary_arn" {
   default = ""
 }
 
+variable "dynamodb_primary_name" {
+  default = ""
+}
+
 variable "environment_name" {}
 
 variable "environment" {}
