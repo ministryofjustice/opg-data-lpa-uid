@@ -6,7 +6,9 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 4.59.0"
       configuration_aliases = [
-        aws.management
+        aws.management,
+        aws.eu-west-1,
+        aws.eu-west-2
       ]
     }
   }
