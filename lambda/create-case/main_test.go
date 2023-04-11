@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/aws/aws-sdk-go/aws"
 	"regexp"
 	"testing"
 
@@ -15,6 +16,15 @@ import (
 type mockDynamoDB struct {
 	*dynamodb.DynamoDB
 	mock.Mock
+}
+
+func (m *mockDynamoDB) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+	args := m.Called(*input.TableName, input.Key)
+
+	if args.Get(0) != nil {
+		return args.Get(0).(*dynamodb.GetItemOutput), args.Error(1)
+	}
+	return &dynamodb.GetItemOutput{}, args.Error(1)
 }
 
 func (m *mockDynamoDB) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
@@ -142,9 +152,16 @@ func TestHandleEventSuccess(t *testing.T) {
 		tableName: "my-table",
 	}
 
+	var reUid = regexp.MustCompile(`^MTEST-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
+
+	mDdb.
+		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
+			return reUid.MatchString(*key["uid"].S)
+		})).
+		Return(&dynamodb.GetItemOutput{}, nil)
+
 	mDdb.
 		On("PutItem", "my-table", mock.MatchedBy(func(item map[string]*dynamodb.AttributeValue) bool {
-			var reUid = regexp.MustCompile(`^MTEST-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
 			return reUid.MatchString(*item["uid"].S) &&
 				validateChecksum((*item["uid"].S)[6:]) &&
 				*item["source"].S == "PHONE" &&
@@ -188,6 +205,8 @@ func TestHandleEventSaveError(t *testing.T) {
 		logger:    logger,
 	}
 
+	mDdb.On("GetItem", "my-table", mock.Anything).Return(&dynamodb.GetItemOutput{}, nil)
+
 	mDdb.On("PutItem", "my-table", mock.Anything).Return(err)
 
 	resp, err := l.HandleEvent(generateProxyRequest(Request{
@@ -208,6 +227,65 @@ func TestHandleEventSaveError(t *testing.T) {
 
 	assert.Equal(t, "INTERNAL_SERVER_ERROR", problem.Code)
 	assert.Equal(t, "Internal server error", problem.Detail)
+}
+
+func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
+	mDdb := new(mockDynamoDB)
+	l := Lambda{
+		ddb:       mDdb,
+		tableName: "my-table",
+	}
+
+	var reUid = regexp.MustCompile(`^MTEST-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
+
+	mDdb.
+		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
+			return reUid.MatchString(*key["uid"].S)
+		})).
+		Return(&dynamodb.GetItemOutput{
+			Item: map[string]*dynamodb.AttributeValue{
+				"uid": {S: aws.String("MTEST-7PL7MA8DF8LD")},
+			},
+		}, nil).Twice()
+
+	mDdb.
+		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
+			return reUid.MatchString(*key["uid"].S)
+		})).
+		Return(&dynamodb.GetItemOutput{}, nil).Once()
+
+	mDdb.
+		On("PutItem", "my-table", mock.MatchedBy(func(item map[string]*dynamodb.AttributeValue) bool {
+			return reUid.MatchString(*item["uid"].S) &&
+				validateChecksum((*item["uid"].S)[6:]) &&
+				*item["source"].S == "PHONE" &&
+				*item["type"].S == "hw" &&
+				*item["donor"].M["name"].S == "some name" &&
+				*item["donor"].M["dob"].S == "1976-06-27" &&
+				*item["donor"].M["postcode"].S == "B7A 8FJ"
+		})).
+		Return(nil)
+
+	resp, err := l.HandleEvent(generateProxyRequest(Request{
+		Type:   "hw",
+		Source: "PHONE",
+		Donor: Donor{
+			Name:        "some name",
+			DateOfBirth: "1976-06-27",
+			Postcode:    "B7A 8FJ",
+		},
+	}))
+
+	mDdb.AssertNumberOfCalls(t, "GetItem", 3)
+
+	assert.Equal(t, 201, resp.StatusCode)
+	assert.Nil(t, err)
+
+	var response Response
+	_ = json.Unmarshal([]byte(resp.Body), &response)
+
+	assert.Regexp(t, `^MTEST(-[346789QWERTYUPADFGHJKLXCVBNM]{4}){3}$`, response.Uid)
+	mock.AssertExpectationsForObjects(t, mDdb)
 }
 
 func TestHypenateUID(t *testing.T) {
