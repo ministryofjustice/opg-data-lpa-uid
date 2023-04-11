@@ -74,13 +74,32 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 		return problem.Respond()
 	}
 
-	// generate uid
 	data.CreatedAt = time.Now()
-	data.Uid, err = generateUID()
 
-	if err != nil {
-		l.logger.Print(err)
-		return ProblemInternalServerError.Respond()
+	// generate uid
+	for {
+		data.Uid, err = generateUID()
+		if err != nil {
+			l.logger.Print(err)
+			return ProblemInternalServerError.Respond()
+		}
+
+		// check uid is unique
+		result, err := l.ddb.GetItem(&dynamodb.GetItemInput{
+			TableName: aws.String(l.tableName),
+			Key: map[string]*dynamodb.AttributeValue{
+				"uid": {S: aws.String(data.Uid)},
+			},
+		})
+
+		if err != nil {
+			l.logger.Print(err)
+			return ProblemInternalServerError.Respond()
+		}
+
+		if result.Item == nil {
+			break
+		}
 	}
 
 	// save to dynamodb
