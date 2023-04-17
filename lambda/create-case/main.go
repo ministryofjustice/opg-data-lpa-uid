@@ -70,7 +70,6 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	if isValid, validationErrors := validate(data); isValid {
 		problem := ProblemInvalidRequest
 		problem.Errors = validationErrors
-		l.logger.Print(problem)
 
 		return problem.Respond()
 	}
