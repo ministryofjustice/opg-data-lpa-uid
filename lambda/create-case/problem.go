@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 
@@ -40,12 +41,19 @@ var ProblemInvalidRequest Problem = Problem{
 }
 
 func (problem Problem) Respond() (events.APIGatewayProxyResponse, error) {
-	json.NewEncoder(os.Stdout).Encode(LogEvent{
+	err := json.NewEncoder(os.Stdout).Encode(LogEvent{
 		ServiceName: "opg-data-lpa-uid",
 		Timestamp:   time.Now(),
 		Status:      problem.StatusCode,
 		Problem:     problem,
 	})
+
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       fmt.Sprintf("{\"code\":\"INTERNAL_SERVER_ERROR\",\"detail\":\"%s\"}", err),
+		}, err
+	}
 
 	code := problem.StatusCode
 	body, err := json.Marshal(problem)
