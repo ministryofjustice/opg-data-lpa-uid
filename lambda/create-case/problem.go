@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"time"
 
@@ -51,8 +50,8 @@ func (problem Problem) Respond() (events.APIGatewayProxyResponse, error) {
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       fmt.Sprintf("{\"code\":\"INTERNAL_SERVER_ERROR\",\"detail\":\"%s\"}", err),
-		}, err
+			Body:       "{\"code\":\"INTERNAL_SERVER_ERROR\",\"detail\":\"Internal server error\"}",
+		}, nil
 	}
 
 	code := problem.StatusCode
