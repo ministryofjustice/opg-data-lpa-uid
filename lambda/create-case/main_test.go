@@ -153,6 +153,9 @@ func TestHandleEventErrorIfFieldsAreInvalid(t *testing.T) {
 		Source: "/donor/postcode",
 		Detail: "must be a valid postcode",
 	})
+	assert.Equal(t, problem.ErrorString,
+		"/source must be APPLICANT or PHONE, /type must be hw or pfa, /donor/dob must match format YYYY-MM-DD, /donor/postcode must be a valid postcode",
+	)
 }
 
 func TestHandleEventSuccess(t *testing.T) {

@@ -42,7 +42,7 @@ resource "aws_cloudwatch_log_metric_filter" "uid_service_401_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "invalid_dob_errors" {
   name           = "${local.environment_name}-invalid-dob-errors"
-  pattern        = "{$.message = \"*/donor/dob*must match format YYYY-MM-DD*\"}"
+  pattern        = "{$.problem.error_string = \"*/donor/dob must match format YYYY-MM-DD*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
@@ -54,7 +54,7 @@ resource "aws_cloudwatch_log_metric_filter" "invalid_dob_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "missing_dob_errors" {
   name           = "${local.environment_name}-missing-dob-errors"
-  pattern        = "{$.message = \"*/donor/dob*required*\"}"
+  pattern        = "{$.problem.error_string = \"*/donor/dob required*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
@@ -66,7 +66,7 @@ resource "aws_cloudwatch_log_metric_filter" "missing_dob_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "missing_source_errors" {
   name           = "${local.environment_name}-missing-source-errors"
-  pattern        = "{$.message = \"*/source*required*\"}"
+  pattern        = "{$.problem.error_string = \"*/source required*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
@@ -78,7 +78,7 @@ resource "aws_cloudwatch_log_metric_filter" "missing_source_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "invalid_source_errors" {
   name           = "${local.environment_name}-invalid-source-errors"
-  pattern        = "{$.message = \"*/source*must be APPLICANT or PHONE*\"}"
+  pattern        = "{$.problem.error_string = \"*/source must be APPLICANT or PHONE*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
@@ -90,7 +90,7 @@ resource "aws_cloudwatch_log_metric_filter" "invalid_source_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "missing_type_errors" {
   name           = "${local.environment_name}-missing-type-errors"
-  pattern        = "{$.message = \"*/type*required*\"}"
+  pattern        = "{$.problem.error_string = \"*/type required*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
@@ -102,7 +102,7 @@ resource "aws_cloudwatch_log_metric_filter" "missing_type_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "invalid_type_errors" {
   name           = "${local.environment_name}-invalid-type-errors"
-  pattern        = "{$.message = \"*/type*must be hw or pfa*\"}"
+  pattern        = "{$.problem.error_string = \"*/type must be hw or pfa*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
@@ -114,7 +114,7 @@ resource "aws_cloudwatch_log_metric_filter" "invalid_type_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "missing_postcode_errors" {
   name           = "${local.environment_name}-missing-postcode-errors"
-  pattern        = "{$.message = \"*/donor/postcode*required*\"}"
+  pattern        = "{$.problem.error_string = \"*/donor/postcode required*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
@@ -126,7 +126,7 @@ resource "aws_cloudwatch_log_metric_filter" "missing_postcode_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "invalid_postcode_errors" {
   name           = "${local.environment_name}-invalid-postcode-errors"
-  pattern        = "{$.message = \"*/donor/postcode*must be a valid postcode*\"}"
+  pattern        = "{$.problem.error_string = \"*/donor/postcode must be a valid postcode*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {
