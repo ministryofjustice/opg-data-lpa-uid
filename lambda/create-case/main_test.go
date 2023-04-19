@@ -72,12 +72,7 @@ func TestHandleEventErrorIfBadBody(t *testing.T) {
 }
 
 func TestHandleEventErrorIfMissingRequiredFields(t *testing.T) {
-	logger := &mockLogger{}
-	logger.On("Print", mock.Anything)
-
-	l := Lambda{
-		logger: logger,
-	}
+	l := Lambda{}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: "{}",
@@ -113,12 +108,7 @@ func TestHandleEventErrorIfMissingRequiredFields(t *testing.T) {
 }
 
 func TestHandleEventErrorIfFieldsAreInvalid(t *testing.T) {
-	logger := &mockLogger{}
-	logger.On("Print", mock.Anything)
-
-	l := Lambda{
-		logger: logger,
-	}
+	l := Lambda{}
 
 	resp, err := l.HandleEvent(generateProxyRequest(Request{
 		Type:   "bad",
