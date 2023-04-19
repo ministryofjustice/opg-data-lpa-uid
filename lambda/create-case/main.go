@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -70,7 +72,11 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 	if isValid, validationErrors := validate(data); isValid {
 		problem := ProblemInvalidRequest
 		problem.Errors = validationErrors
+		for _, ve := range validationErrors {
+			problem.ErrorString += fmt.Sprintf("%s %s, ", ve.Source, ve.Detail)
+		}
 
+		problem.ErrorString = strings.TrimRight(problem.ErrorString, ", ")
 		return problem.Respond()
 	}
 

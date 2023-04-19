@@ -16,10 +16,11 @@ type Error struct {
 }
 
 type Problem struct {
-	StatusCode int     `json:"-"`
-	Code       string  `json:"code"`
-	Detail     string  `json:"detail"`
-	Errors     []Error `json:"errors,omitempty"`
+	StatusCode  int     `json:"-"`
+	Code        string  `json:"code"`
+	Detail      string  `json:"detail"`
+	Errors      []Error `json:"errors,omitempty"`
+	ErrorString string  `json:"error_string,omitempty"`
 }
 
 type LogEvent struct {
