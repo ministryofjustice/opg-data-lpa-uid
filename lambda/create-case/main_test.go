@@ -72,7 +72,12 @@ func TestHandleEventErrorIfBadBody(t *testing.T) {
 }
 
 func TestHandleEventErrorIfMissingRequiredFields(t *testing.T) {
-	l := Lambda{}
+	logger := &mockLogger{}
+	logger.On("Print", mock.Anything)
+
+	l := Lambda{
+		logger: logger,
+	}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: "{}",
@@ -108,7 +113,12 @@ func TestHandleEventErrorIfMissingRequiredFields(t *testing.T) {
 }
 
 func TestHandleEventErrorIfFieldsAreInvalid(t *testing.T) {
-	l := Lambda{}
+	logger := &mockLogger{}
+	logger.On("Print", mock.Anything)
+
+	l := Lambda{
+		logger: logger,
+	}
 
 	resp, err := l.HandleEvent(generateProxyRequest(Request{
 		Type:   "bad",
@@ -143,6 +153,9 @@ func TestHandleEventErrorIfFieldsAreInvalid(t *testing.T) {
 		Source: "/donor/postcode",
 		Detail: "must be a valid postcode",
 	})
+	assert.Equal(t, problem.ErrorString,
+		"/source must be APPLICANT or PHONE, /type must be hw or pfa, /donor/dob must match format YYYY-MM-DD, /donor/postcode must be a valid postcode",
+	)
 }
 
 func TestHandleEventSuccess(t *testing.T) {

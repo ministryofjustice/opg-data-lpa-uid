@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -12,10 +14,18 @@ type Error struct {
 }
 
 type Problem struct {
-	StatusCode int     `json:"-"`
-	Code       string  `json:"code"`
-	Detail     string  `json:"detail"`
-	Errors     []Error `json:"errors,omitempty"`
+	StatusCode  int     `json:"-"`
+	Code        string  `json:"code"`
+	Detail      string  `json:"detail"`
+	Errors      []Error `json:"errors,omitempty"`
+	ErrorString string  `json:"error_string,omitempty"`
+}
+
+type LogEvent struct {
+	ServiceName string    `json:"service_name"`
+	Timestamp   time.Time `json:"timestamp"`
+	Status      int       `json:"status"`
+	Problem     Problem   `json:"problem"`
 }
 
 var ProblemInternalServerError Problem = Problem{
@@ -31,6 +41,20 @@ var ProblemInvalidRequest Problem = Problem{
 }
 
 func (problem Problem) Respond() (events.APIGatewayProxyResponse, error) {
+	err := json.NewEncoder(os.Stdout).Encode(LogEvent{
+		ServiceName: "opg-data-lpa-uid",
+		Timestamp:   time.Now(),
+		Status:      problem.StatusCode,
+		Problem:     problem,
+	})
+
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "{\"code\":\"INTERNAL_SERVER_ERROR\",\"detail\":\"Internal server error\"}",
+		}, nil
+	}
+
 	code := problem.StatusCode
 	body, err := json.Marshal(problem)
 

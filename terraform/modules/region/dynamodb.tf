@@ -11,6 +11,11 @@ resource "aws_dynamodb_table" "lpa_uid" {
     type = "S"
   }
 
+  attribute {
+    name = "source"
+    type = "S"
+  }
+
   point_in_time_recovery {
     enabled = !var.is_local
   }
@@ -24,6 +29,12 @@ resource "aws_dynamodb_table" "lpa_uid" {
     ignore_changes = [
       replica
     ]
+  }
+
+  global_secondary_index {
+    name            = "source_index"
+    hash_key        = "source"
+    projection_type = "ALL"
   }
 }
 
