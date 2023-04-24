@@ -136,6 +136,90 @@ resource "aws_cloudwatch_log_metric_filter" "invalid_postcode_errors" {
   }
 }
 
+resource "aws_cloudwatch_metric_alarm" "uid_service_5xx_errors" {
+  actions_enabled           = true
+  alarm_actions             = [data.aws_sns_topic.cloudwatch_api.arn]
+  alarm_description         = "5xx errors occur in the ${local.environment_name} UID service."
+  alarm_name                = "${local.environment_name}-uid-service-5xx-errors"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  datapoints_to_alarm       = 3
+  evaluation_periods        = 3
+  insufficient_data_actions = []
+  metric_name               = "5XXError"
+  namespace                 = "AWS/ApiGateway"
+  ok_actions                = [data.aws_sns_topic.cloudwatch_api.arn]
+  period                    = 60
+  statistic                 = "Sum"
+  threshold                 = 1
+  treat_missing_data        = "notBreaching"
+}
+
+resource "aws_cloudwatch_metric_alarm" "uid_service_4xx_error_anomaly" {
+  actions_enabled           = true
+  alarm_actions             = [data.aws_sns_topic.cloudwatch_api.arn]
+  alarm_description         = "4xx errors anomaly occured in the ${local.environment_name} UID service."
+  alarm_name                = "${local.environment_name}-uid-service-4xx-errors"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  datapoints_to_alarm       = 5
+  evaluation_periods        = 5
+  insufficient_data_actions = []
+  ok_actions                = [data.aws_sns_topic.cloudwatch_api.arn]
+  treat_missing_data        = "notBreaching"
+  threshold_metric_id       = "e1"
+
+  metric_query {
+    id          = "e1"
+    expression  = "ANOMALY_DETECTION_BAND(m1)"
+    label       = "4xx error rate"
+    return_data = true
+  }
+
+  metric_query {
+    id          = "m1"
+    return_data = true
+    metric {
+      dimensions  = {}
+      metric_name = "4XXError"
+      namespace   = "AWS/ApiGateway"
+      period      = 60
+      stat        = "Sum"
+    }
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "uid_service_high_request_rate" {
+  actions_enabled           = true
+  alarm_actions             = [data.aws_sns_topic.cloudwatch_api.arn]
+  alarm_description         = "An abnormally high rate of requests detected in the ${local.environment_name} UID service."
+  alarm_name                = "${local.environment_name}-uid-service-high-request-rate"
+  comparison_operator       = "GreaterThanThreshold"
+  datapoints_to_alarm       = 5
+  evaluation_periods        = 5
+  insufficient_data_actions = []
+  ok_actions                = [data.aws_sns_topic.cloudwatch_api.arn]
+  treat_missing_data        = "notBreaching"
+  threshold_metric_id       = "e2"
+
+  metric_query {
+    id          = "e2"
+    expression  = "ANOMALY_DETECTION_BAND(m2)"
+    label       = "high request rate"
+    return_data = true
+  }
+
+  metric_query {
+    id          = "m2"
+    return_data = true
+    metric {
+      dimensions  = {}
+      metric_name = "Count"
+      namespace   = "AWS/ApiGateway"
+      period      = 60
+      stat        = "Sum"
+    }
+  }
+}
+
 # See the following link for further information
 # https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
 data "aws_iam_policy_document" "cloudwatch_kms" {
