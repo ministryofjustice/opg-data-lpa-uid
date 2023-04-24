@@ -193,16 +193,31 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_high_request_rate" {
   alarm_description         = "An abnormally high rate of requests detected in the ${local.environment_name} UID service."
   alarm_name                = "${local.environment_name}-uid-service-high-request-rate"
   comparison_operator       = "GreaterThanThreshold"
-  datapoints_to_alarm       = 1
-  evaluation_periods        = 1
+  datapoints_to_alarm       = 5
+  evaluation_periods        = 5
   insufficient_data_actions = []
-  metric_name               = "Count"
-  namespace                 = "AWS/ApiGateway"
   ok_actions                = [data.aws_sns_topic.cloudwatch_api.arn]
-  period                    = 60
-  statistic                 = "Sum"
-  threshold                 = 500
   treat_missing_data        = "notBreaching"
+  threshold_metric_id       = "e2"
+
+  metric_query {
+    id          = "e2"
+    expression  = "ANOMALY_DETECTION_BAND(m2)"
+    label       = "high request rate"
+    return_data = true
+  }
+
+  metric_query {
+    id          = "m2"
+    return_data = true
+    metric {
+      dimensions  = {}
+      metric_name = "Count"
+      namespace   = "AWS/ApiGateway"
+      period      = 60
+      stat        = "Sum"
+    }
+  }
 }
 
 # See the following link for further information
