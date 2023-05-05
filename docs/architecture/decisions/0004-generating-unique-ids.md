@@ -2,6 +2,8 @@
 
 Date: 2023-03-16
 
+Edited: 2023-05-05
+
 ## Status
 
 Accepted
@@ -29,8 +31,7 @@ A problem that Use an LPA have experienced is words (particularly "bad" words) a
 ## Decision
 
 - The code will be 12 digits long to keep them consistent with current LPA UIDs & UAL activation key format and number of possible combinations. 
-- They will have an M- prefix to differentiate from existing reference numbers and Use an LPA activation keys (M for "Modernising"). For now (before private beta) we will prefix them with "MTEST-" to distinguish "test" cases.
-Eg: `M-3QT4-F65X-A7EJ`
+- They will have an M- prefix to differentiate from existing reference numbers and Use an LPA activation keys (M for "Modernising"), e.g. `M-3QT4-F65X-A7EJ`. Previously, we intended to use an MTEST- prefix to differentiate test codes from live ones. However, as noted in VEGA-1828, having two different prefixes caused problems with cross-service implementation; consequently, we modified both live and test codes to use the M- prefix.
 
 - To prevent users from being able to calculate/predict the reference numbers we will incorporate a random number generator such as the [crypto/rand Golang package](https://pkg.go.dev/crypto/rand) into the reference number generator. This package provides an advantage over the [math/rand Golang package](https://pkg.go.dev/math/rand), as in crypto/rand we will not have to worry about seeding the generator ourselves eg `index, _ := rand.Int(rand.Reader, big.NewInt(13))`. This solution will prevent prediction or calculation of reference numbers.
 
