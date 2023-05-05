@@ -152,7 +152,7 @@ func TestHandleEventSuccess(t *testing.T) {
 		tableName: "my-table",
 	}
 
-	var reUid = regexp.MustCompile(`^MTEST-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
+	var reUid = regexp.MustCompile(`^M-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
 
 	mDdb.
 		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
@@ -163,7 +163,7 @@ func TestHandleEventSuccess(t *testing.T) {
 	mDdb.
 		On("PutItem", "my-table", mock.MatchedBy(func(item map[string]*dynamodb.AttributeValue) bool {
 			return reUid.MatchString(*item["uid"].S) &&
-				validateChecksum((*item["uid"].S)[6:]) &&
+				validateChecksum((*item["uid"].S)[2:]) &&
 				*item["source"].S == "PHONE" &&
 				*item["type"].S == "hw" &&
 				*item["donor"].M["name"].S == "some name" &&
@@ -188,7 +188,7 @@ func TestHandleEventSuccess(t *testing.T) {
 	var response Response
 	_ = json.Unmarshal([]byte(resp.Body), &response)
 
-	assert.Regexp(t, `^MTEST(-[346789QWERTYUPADFGHJKLXCVBNM]{4}){3}$`, response.Uid)
+	assert.Regexp(t, `^M(-[346789QWERTYUPADFGHJKLXCVBNM]{4}){3}$`, response.Uid)
 }
 
 func TestHandleEventSaveError(t *testing.T) {
@@ -236,7 +236,7 @@ func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
 		tableName: "my-table",
 	}
 
-	var reUid = regexp.MustCompile(`^MTEST-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
+	var reUid = regexp.MustCompile(`^M-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
 
 	mDdb.
 		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
@@ -244,7 +244,7 @@ func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
 		})).
 		Return(&dynamodb.GetItemOutput{
 			Item: map[string]*dynamodb.AttributeValue{
-				"uid": {S: aws.String("MTEST-7PL7MA8DF8LD")},
+				"uid": {S: aws.String("M-7PL7MA8DF8LD")},
 			},
 		}, nil).Twice()
 
@@ -257,7 +257,7 @@ func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
 	mDdb.
 		On("PutItem", "my-table", mock.MatchedBy(func(item map[string]*dynamodb.AttributeValue) bool {
 			return reUid.MatchString(*item["uid"].S) &&
-				validateChecksum((*item["uid"].S)[6:]) &&
+				validateChecksum((*item["uid"].S)[2:]) &&
 				*item["source"].S == "PHONE" &&
 				*item["type"].S == "hw" &&
 				*item["donor"].M["name"].S == "some name" &&
@@ -284,10 +284,10 @@ func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
 	var response Response
 	_ = json.Unmarshal([]byte(resp.Body), &response)
 
-	assert.Regexp(t, `^MTEST(-[346789QWERTYUPADFGHJKLXCVBNM]{4}){3}$`, response.Uid)
+	assert.Regexp(t, `^M(-[346789QWERTYUPADFGHJKLXCVBNM]{4}){3}$`, response.Uid)
 	mock.AssertExpectationsForObjects(t, mDdb)
 }
 
 func TestHypenateUID(t *testing.T) {
-	assert.Equal(t, "MTEST-FH4D-E694-A8LC", hyphenateUID("MTEST-FH4DE694A8LC"))
+	assert.Equal(t, "M-FH4D-E694-A8LC", hyphenateUID("M-FH4DE694A8LC"))
 }

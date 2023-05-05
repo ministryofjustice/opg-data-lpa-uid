@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const UID_PREFIX = "MTEST-"
+const UID_PREFIX = "M-"
 
 var AllChars = []string{"3", "4", "6", "7", "8", "9", "Q", "W", "E", "R", "T", "Y", "U", "P", "A", "D", "F", "G", "H", "J", "K", "L", "X", "C", "V", "B", "N", "M"}
 var N = float64(len(AllChars))

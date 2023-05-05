@@ -10,7 +10,7 @@ func TestGenerateUID(t *testing.T) {
 	uid, err := generateUID()
 	assert.Nil(t, err)
 
-	match, err := regexp.Match(`^MTEST-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`, []byte(uid))
+	match, err := regexp.Match(`^M-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`, []byte(uid))
 	assert.Nil(t, err)
 	assert.True(t, match)
 }
