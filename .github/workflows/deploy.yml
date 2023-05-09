@@ -1,0 +1,147 @@
+name: "Deploy to Environment"
+
+on:
+  workflow_call:
+    inputs:
+      workspace_name:
+        description: "The terraform workspace to target for environment actions"
+        required: true
+        type: string
+      version_tag:
+        description: "The docker image tag to deploy in the environment"
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id:
+        description: "AWS Access Key ID"
+        required: true
+      aws_secret_access_key:
+        description: "AWS Secret Access Key"
+        required: true
+      github_access_token:
+        description: "Github Token"
+        required: true
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  terraform_environment_workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - uses: unfor19/install-aws-cli-action@v1
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6
+          terraform_wrapper: false
+      - name: Configure AWS Credentials For Terraform
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: eu-west-1
+          role-duration-seconds: 3600
+          role-session-name: OPGDataLpaUIDGithubAction
+      # - uses: webfactory/ssh-agent@v0.8.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.ssh_deploy_key }}
+
+      - name: Lint Terraform
+        id: tf_lint
+        run: terraform fmt -check -recursive
+        working-directory: ./terraform/aws
+        continue-on-error: true
+
+      - name: Terraform Init
+        run: terraform init -input=false
+        working-directory: ./terraform/aws
+
+      - name: Terraform Plan
+        id: terraform_plan
+        env:
+          TF_WORKSPACE: ${{ inputs.workspace_name }}
+          TF_VAR_app_version: ${{ inputs.version_tag }}
+        run: |
+          terraform workspace show
+          echo "plan_summary=$(terraform plan -no-color -lock-timeout=300s -input=false -parallelism=30 | grep -ioE 'Plan: [[:digit:]]+ to add, [[:digit:]]+ to change, [[:digit:]]+ to destroy|No changes. Your infrastructure matches the configuration.')" >> $GITHUB_OUTPUT
+          terraform plan -lock-timeout=300s -input=false -parallelism=30
+
+        working-directory: ./terraform/aws
+
+      - uses: actions/github-script@v6
+        name: Add plan summary to PR comment
+        if: github.ref != 'refs/heads/main'
+        with:
+          github-token: ${{ secrets.github_access_token }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('PR Environment Terraform Plan Summary')
+            })
+
+            const output = `### PR Environment Terraform Plan Summary
+            \n
+            ${{ steps.terraform_plan.outputs.plan_summary }}`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
+      # - name: Protect environment workspace
+      #   if: github.ref != 'refs/heads/main'
+      #   env:
+      #     TF_WORKSPACE: ${{ inputs.workspace_name }}
+      #     TF_VAR_app_version: ${{ inputs.version_tag }}
+      #   run: |
+      #     wget https://github.com/TomTucka/terraform-workspace-manager/releases/download/v0.3.1/terraform-workspace-manager_Linux_x86_64.tar.gz -O $HOME/terraform-workspace-manager.tar.gz
+      #     sudo tar -xvf $HOME/terraform-workspace-manager.tar.gz -C /usr/local/bin
+      #     sudo chmod +x /usr/local/bin/terraform-workspace-manager
+      #     terraform-workspace-manager -register-workspace=$TF_WORKSPACE -time-to-protect=24 -aws-account-id=653761790766 -aws-iam-role=modernising-lpa-ci
+      #   working-directory: ./terraform/aws
+
+      # - name: Terraform Apply
+      #   env:
+      #     TF_WORKSPACE: ${{ inputs.workspace_name }}
+      #     TF_VAR_app_version: ${{ inputs.version_tag }}
+      #   run: |
+      #     terraform apply -var public_access_enabled=${{ inputs.public_access_enabled }} -lock-timeout=300s -input=false -auto-approve -parallelism=30
+      #   working-directory: ./terraform/aws
+
+      # - name: upload environment config file
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: environment_config_file
+      #     path: ./terraform/aws/environment_config.json
+
+      # - name: Terraform Outputs
+      #   id: terraform_outputs
+      #   env:
+      #     TF_WORKSPACE: ${{ inputs.workspace_name }}
+      #     TF_VAR_app_version: ${{ inputs.version_tag }}
+      #   run: |
+      #     echo "workspace_name=$(terraform output -raw workspace_name)" >> $GITHUB_OUTPUT
+      #     echo "container_version=$(terraform output -raw container_version)" >> $GITHUB_OUTPUT
+      #     echo "url=$(terraform output -raw app_fqdn)" >> $GITHUB_OUTPUT
+      #   working-directory: ./terraform/aws
