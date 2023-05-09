@@ -20,6 +20,10 @@ variable "is_primary" {
 
 variable "lambda_iam_role" {}
 
+variable "app_version" {
+  type = string
+}
+
 locals {
   environment_name = "${var.environment_name}-${data.aws_region.current.name}"
 }
