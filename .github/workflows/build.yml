@@ -14,6 +14,25 @@ defaults:
     shell: bash
 
 jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Image cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/images
+          key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
+      - name: Build Images
+        run: |
+          make build
+          mkdir -p /tmp/images
+          docker save -o /tmp/images/delegator.tar delegator:latest
+          docker save -o /tmp/images/lambda-create-case.tar 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
+
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -21,16 +40,30 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: "0"
-      - run: make up test-api
-
       - name: Run unit tests
         run: make test
 
+  integration-test:
+    name: Integration test
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Image cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/images
+          key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
+      - name: Restore Images
+        run: |
+          docker load -i /tmp/images/delegator.tar
+          docker load -i /tmp/images/lambda-create-case.tar
+      - run: make up test-api
+
   push:
     name: Bump tag
-    needs: [test]
+    needs: [test, integration-test]
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
       tag: ${{ steps.bump_version.outputs.tag }}
@@ -58,3 +91,57 @@ jobs:
           PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
           RELEASE_BRANCHES: main
           WITH_V: true
+
+      - uses: unfor19/install-aws-cli-action@v1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::311462405659:role/sirius-actions-ci
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: 311462405659
+
+      - name: Image cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/images
+          key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
+      - name: Restore Images
+        run: |
+          docker load -i /tmp/images/delegator.tar
+          docker load -i /tmp/images/lambda-create-case.tar
+
+      - name: Push Containers
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: integrations/lpa-uid/lambda-create-case
+        run: |
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          if [ $BRANCH_NAME == "main" ]; then
+            # We want all of the tags pushed
+            docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
+          else
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          fi
+
+          echo "Container tag: ${{ steps.bump_version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy-dev:
+    name: Deploy to Development
+    needs: push
+    uses: ./.github/workflows/deploy.yml
+    with:
+      workspace_name: development
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
