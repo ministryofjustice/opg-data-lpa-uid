@@ -27,6 +27,10 @@ variable "environments" {
   )
 }
 
+variable "app_version" {
+  default = "latest"
+}
+
 variable "default_role" {
   default = "operator"
 }
