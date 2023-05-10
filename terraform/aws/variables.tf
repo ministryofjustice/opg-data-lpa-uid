@@ -27,10 +27,14 @@ variable "environments" {
   )
 }
 
+variable "app_version" {
+  default = "latest"
+}
+
 variable "default_role" {
-  default = "operator"
+  default = "integrations-ci"
 }
 
 variable "management_role" {
-  default = "lpa-uid-ci"
+  default = "integrations-ci"
 }
