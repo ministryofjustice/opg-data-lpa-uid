@@ -5,7 +5,7 @@ locals {
   is_local         = false
   mandatory_moj_tags = {
     business-unit    = "OPG"
-    application      = "LPA UID Service"
+    application      = "opg-data-lpa-uid"
     account          = local.environment.account_name
     environment-name = local.environment_name
     is-production    = terraform.workspace == "production" ? true : false

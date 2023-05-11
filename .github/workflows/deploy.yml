@@ -46,9 +46,6 @@ jobs:
           aws-region: eu-west-1
           role-duration-seconds: 3600
           role-session-name: OPGDataLpaUIDGithubAction
-      # - uses: webfactory/ssh-agent@v0.8.0
-      #   with:
-      #     ssh-private-key: ${{ secrets.ssh_deploy_key }}
 
       - name: Lint Terraform
         id: tf_lint
@@ -109,39 +106,11 @@ jobs:
               })
             }
 
-      # - name: Protect environment workspace
-      #   if: github.ref != 'refs/heads/main'
-      #   env:
-      #     TF_WORKSPACE: ${{ inputs.workspace_name }}
-      #     TF_VAR_app_version: ${{ inputs.version_tag }}
-      #   run: |
-      #     wget https://github.com/TomTucka/terraform-workspace-manager/releases/download/v0.3.1/terraform-workspace-manager_Linux_x86_64.tar.gz -O $HOME/terraform-workspace-manager.tar.gz
-      #     sudo tar -xvf $HOME/terraform-workspace-manager.tar.gz -C /usr/local/bin
-      #     sudo chmod +x /usr/local/bin/terraform-workspace-manager
-      #     terraform-workspace-manager -register-workspace=$TF_WORKSPACE -time-to-protect=24 -aws-account-id=653761790766 -aws-iam-role=modernising-lpa-ci
-      #   working-directory: ./terraform/aws
-
-      # - name: Terraform Apply
-      #   env:
-      #     TF_WORKSPACE: ${{ inputs.workspace_name }}
-      #     TF_VAR_app_version: ${{ inputs.version_tag }}
-      #   run: |
-      #     terraform apply -var public_access_enabled=${{ inputs.public_access_enabled }} -lock-timeout=300s -input=false -auto-approve -parallelism=30
-      #   working-directory: ./terraform/aws
-
-      # - name: upload environment config file
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: environment_config_file
-      #     path: ./terraform/aws/environment_config.json
-
-      # - name: Terraform Outputs
-      #   id: terraform_outputs
-      #   env:
-      #     TF_WORKSPACE: ${{ inputs.workspace_name }}
-      #     TF_VAR_app_version: ${{ inputs.version_tag }}
-      #   run: |
-      #     echo "workspace_name=$(terraform output -raw workspace_name)" >> $GITHUB_OUTPUT
-      #     echo "container_version=$(terraform output -raw container_version)" >> $GITHUB_OUTPUT
-      #     echo "url=$(terraform output -raw app_fqdn)" >> $GITHUB_OUTPUT
-      #   working-directory: ./terraform/aws
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        env:
+          TF_WORKSPACE: ${{ inputs.workspace_name }}
+          TF_VAR_app_version: ${{ inputs.version_tag }}
+        run: |
+          terraform apply -lock-timeout=300s -input=false -auto-approve -parallelism=30
+        working-directory: ./terraform/aws

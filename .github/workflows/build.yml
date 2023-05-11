@@ -148,12 +148,36 @@ jobs:
 
           echo "Container tag: ${{ steps.bump_version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
 
-  deploy-dev:
+  deploy-development:
     name: Deploy to Development
     needs: push
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: development
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-preproduction:
+    name: Deploy to Preproduction
+    needs: deploy-development
+    uses: ./.github/workflows/deploy.yml
+    with:
+      workspace_name: preproduction
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-preproduction
+    uses: ./.github/workflows/deploy.yml
+    with:
+      workspace_name: production
       version_tag: ${{ needs.push.outputs.tag }}
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
