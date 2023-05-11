@@ -1,7 +1,9 @@
 SHELL = '/bin/bash'
 
-up:
+build:
 	docker-compose build --parallel lambda-create-case delegator
+
+up:
 	docker-compose up -d localstack
 
 	cd terraform/local && terraform init
