@@ -82,7 +82,7 @@ output "api_stage_uri" {
 }
 
 resource "aws_api_gateway_domain_name" "lpa_uid" {
-  domain_name              = trimsuffix(local.a_record, ".")
+  domain_name              = terraform.workspace == "production" ? data.aws_route53_zone.service.name : "${local.a_record}${data.aws_route53_zone.service.name}"
   regional_certificate_arn = aws_acm_certificate.environment.arn
   security_policy          = "TLS_1_2"
 
