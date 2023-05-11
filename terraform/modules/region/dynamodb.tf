@@ -1,8 +1,10 @@
 resource "aws_dynamodb_table" "lpa_uid" {
-  count        = var.is_primary ? 1 : 0
-  name         = "lpa-uid-${var.environment_name}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "uid"
+  count            = var.is_primary ? 1 : 0
+  name             = "lpa-uid-${var.environment_name}"
+  billing_mode     = "PAY_PER_REQUEST"
+  hash_key         = "uid"
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
 
   deletion_protection_enabled = true
 
