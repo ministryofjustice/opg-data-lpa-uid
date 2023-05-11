@@ -1,3 +1,9 @@
-resource "aws_security_group" "lambda_egress" {
-  name = "lpa-uid-${local.environment_name}"
+resource "aws_security_group" "lambda" {
+  name        = "lpa-uid-${local.environment_name}"
+  vpc_id      = data.aws_vpc.sirius.id
+  description = "LPA UID Lambda security group"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
