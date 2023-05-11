@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "create_case" {
   function_name = "lpa-uid-create-case-${local.environment_name}"
-  image_uri     = "311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:${var.app_version}"
+  image_uri     = "311462405659.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/integrations/lpa-uid-create-case-lambda:${var.app_version}"
   package_type  = "Image"
   role          = var.lambda_iam_role.arn
   timeout       = 5
