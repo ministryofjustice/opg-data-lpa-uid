@@ -159,7 +159,7 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_4xx_error_anomaly" {
   alarm_actions             = [data.aws_sns_topic.cloudwatch_api.arn]
   alarm_description         = "4xx errors anomaly occured in the ${local.environment_name} UID service."
   alarm_name                = "${local.environment_name}-uid-service-4xx-errors"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  comparison_operator       = "GreaterThanUpperThreshold"
   datapoints_to_alarm       = 5
   evaluation_periods        = 5
   insufficient_data_actions = []
@@ -192,7 +192,7 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_high_request_rate" {
   alarm_actions             = [data.aws_sns_topic.cloudwatch_api.arn]
   alarm_description         = "An abnormally high rate of requests detected in the ${local.environment_name} UID service."
   alarm_name                = "${local.environment_name}-uid-service-high-request-rate"
-  comparison_operator       = "GreaterThanThreshold"
+  comparison_operator       = "GreaterThanUpperThreshold"
   datapoints_to_alarm       = 5
   evaluation_periods        = 5
   insufficient_data_actions = []

@@ -14,6 +14,6 @@ resource "aws_lambda_function" "create_case" {
 
   vpc_config {
     subnet_ids         = data.aws_subnets.private.ids
-    security_group_ids = []
+    security_group_ids = [aws_security_group.lambda.id]
   }
 }

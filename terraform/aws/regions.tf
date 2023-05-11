@@ -1,5 +1,5 @@
 module "eu-west-1" {
-  source     = "../modules/region"
+  source = "../modules/region"
 
   app_version      = var.app_version
   environment_name = local.environment_name
@@ -15,7 +15,7 @@ module "eu-west-1" {
 }
 
 module "eu-west-2" {
-  source     = "../modules/region"
+  source = "../modules/region"
 
   app_version           = var.app_version
   dynamodb_primary_arn  = module.eu-west-1.dynamodb_arn
