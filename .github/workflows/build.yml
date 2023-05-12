@@ -158,7 +158,6 @@ jobs:
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-preproduction:
     name: Deploy to Preproduction
@@ -170,7 +169,6 @@ jobs:
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-production:
     name: Deploy to Production
@@ -182,4 +180,3 @@ jobs:
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
