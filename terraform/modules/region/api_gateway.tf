@@ -10,6 +10,9 @@ resource "aws_api_gateway_rest_api" "lpa_uid" {
   name        = "lpa-uid-${terraform.workspace}"
   description = "API Gateway for LPA UID - ${local.environment_name}"
   body        = data.template_file._.rendered
+  tags = var.is_local ? {
+    _custom_id_ = "lpa-uid"
+  } : {}
 
   endpoint_configuration {
     types = ["REGIONAL"]
