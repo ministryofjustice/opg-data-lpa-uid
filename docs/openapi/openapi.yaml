@@ -5,6 +5,13 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://lpa-uid.api.opg.service.justice.gov.uk
+    description: Production
+  - url: https://preproduction.lpa-uid.api.opg.service.justice.gov.uk
+    description: Preproduction
+  - url: https://development.lpa-uid.api.opg.service.justice.gov.uk
+    description: Development
 security:
   - {}
 paths:
