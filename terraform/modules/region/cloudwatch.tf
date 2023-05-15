@@ -152,6 +152,9 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_5xx_errors" {
   statistic                 = "Sum"
   threshold                 = 1
   treat_missing_data        = "notBreaching"
+  dimensions = {
+    ApiName = aws_api_gateway_rest_api.lpa_uid.name
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "uid_service_4xx_error_anomaly" {
@@ -178,7 +181,9 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_4xx_error_anomaly" {
     id          = "m1"
     return_data = true
     metric {
-      dimensions  = {}
+      dimensions = {
+        ApiName = aws_api_gateway_rest_api.lpa_uid.name
+      }
       metric_name = "4XXError"
       namespace   = "AWS/ApiGateway"
       period      = 60
@@ -211,7 +216,9 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_high_request_rate" {
     id          = "m2"
     return_data = true
     metric {
-      dimensions  = {}
+      dimensions = {
+        ApiName = aws_api_gateway_rest_api.lpa_uid.name
+      }
       metric_name = "Count"
       namespace   = "AWS/ApiGateway"
       period      = 60
