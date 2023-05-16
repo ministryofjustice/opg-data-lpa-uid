@@ -1,7 +1,7 @@
 data "template_file" "_" {
   template = file("../../docs/openapi/openapi.yaml")
   vars = {
-    allowed_roles = jsonencode(list([
+    allowed_roles = jsonencode(tolist([
       "arn:aws:iam::653761790766:root",
       "arn:aws:iam::792093328875:role/preproduction-app-task-role",
       "arn:aws:iam::313879017102:role/production-app-task-role"
