@@ -23,6 +23,7 @@ jobs:
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=main \
+            --provider-tags=$(git describe --tags) \
             --publish \
             --user=admin \
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
@@ -33,6 +34,7 @@ jobs:
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=main \
+            --provider-tags=$(git describe --tags) \
             --publish \
             --user=admin \
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
@@ -44,4 +46,5 @@ jobs:
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=${{ github.head_ref }} \
+            --provider-tags=$(git describe --tags) \
             --consumer-version-selectors='{"mainBranch": true}'
