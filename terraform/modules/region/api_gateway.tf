@@ -1,7 +1,7 @@
 data "template_file" "_" {
   template = file("../../docs/openapi/openapi.yaml")
   vars = {
-    allowed_roles                 = jsonencode(local.environment.allowed_arns)
+    allowed_roles                 = jsonencode(var.environment.allowed_arns)
     create_case_lambda_invoke_arn = aws_lambda_function.create_case.invoke_arn
   }
 }
