@@ -16,8 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - run: make build up
       - name: Verify specified Pact
         if: ${{ github.event_name == 'repository_dispatch' }}
@@ -25,7 +23,6 @@ jobs:
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=main \
-            --provider-tags=$(git describe --tags) \
             --publish \
             --user=admin \
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
@@ -36,7 +33,6 @@ jobs:
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=main \
-            --provider-tags=$(git describe --tags) \
             --publish \
             --user=admin \
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
