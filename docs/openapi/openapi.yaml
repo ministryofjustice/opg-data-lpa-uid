@@ -76,6 +76,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
+      x-amazon-apigateway-auth:
+        type: "AWS_IAM"
       x-amazon-apigateway-integration:
         uri: ${create_case_lambda_invoke_arn}
         httpMethod: "POST"
