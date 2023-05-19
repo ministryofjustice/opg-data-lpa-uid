@@ -1,7 +1,6 @@
 data "template_file" "_" {
   template = file("../../docs/openapi/openapi.yaml")
   vars = {
-    allowed_roles                 = jsonencode(var.environment.allowed_arns)
     create_case_lambda_invoke_arn = aws_lambda_function.create_case.invoke_arn
   }
 }
@@ -110,4 +109,23 @@ resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
     metrics_enabled = true
     logging_level   = "INFO"
   }
+}
+
+data "aws_iam_policy_document" "lpa_uid" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = [var.environment.allowed_arns]
+    }
+
+    actions   = ["execute-api:Invoke"]
+    resources = [aws_api_gateway_rest_api.lpa_uid.execution_arn]
+  }
+}
+
+resource "aws_api_gateway_rest_api_policy" "lpa_uid" {
+  rest_api_id = aws_api_gateway_rest_api.lpa_uid.id
+  policy      = data.aws_iam_policy_document.lpa_uid.json
 }
