@@ -121,7 +121,7 @@ data "aws_iam_policy_document" "lpa_uid" {
     }
 
     actions   = ["execute-api:Invoke"]
-    resources = ["${aws_api_gateway_rest_api.lpa_uid.execution_arn}/${aws_api_gateway_stage.current.stage_name}/*"]
+    resources = ["${aws_api_gateway_rest_api.lpa_uid.execution_arn}/${aws_api_gateway_stage.current.stage_name}/*/*/*"]
   }
 }
 
