@@ -17,3 +17,13 @@ resource "aws_lambda_function" "create_case" {
     security_group_ids = [aws_security_group.lambda.id]
   }
 }
+
+resource "aws_lambda_permission" "create_case" {
+  statement_id  = "AllowLambdaAPIGatewayInvocation"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.create_case.function_name
+  principal     = "apigateway.amazonaws.com"
+  # The /* part allows invocation from any stage, method and resource path
+  # within API Gateway.
+  source_arn = "${aws_api_gateway_rest_api.lpa_uid.execution_arn}/*"
+}
