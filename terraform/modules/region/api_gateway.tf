@@ -117,7 +117,7 @@ data "aws_iam_policy_document" "lpa_uid" {
 
     principals {
       type        = "AWS"
-      identifiers = var.environment.allowed_arns
+      identifiers = [var.environment.allowed_arns]
     }
 
     actions   = ["execute-api:Invoke"]
