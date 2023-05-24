@@ -23,7 +23,7 @@ variable "environments" {
     object({
       account_id   = string
       account_name = string
-      allowed_arns = list(string)
+      allowed_arns = string
     })
   )
 }
