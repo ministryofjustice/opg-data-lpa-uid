@@ -60,14 +60,14 @@ resource "aws_api_gateway_stage" "current" {
     destination_arn = aws_cloudwatch_log_group.lpa_uid.arn
     format = join("", [
       "{\"requestId\":\"$context.requestId\",",
-      "\"ip\":\"$context.identity.sourceIp\"",
-      "\"caller\":\"$context.identity.caller\"",
-      "\"user\":\"$context.identity.user\"",
-      "\"requestTime\":\"$context.requestTime\"",
+      "\"ip\":\"$context.identity.sourceIp\",",
+      "\"caller\":\"$context.identity.caller\",",
+      "\"user\":\"$context.identity.user\",",
+      "\"requestTime\":\"$context.requestTime\",",
       "\"httpMethod\":\"$context.httpMethod\"",
-      "\"resourcePath\":\"$context.resourcePath\"",
-      "\"status\":\"$context.status\"",
-      "\"protocol\":\"$context.protocol\"",
+      "\"resourcePath\":\"$context.resourcePath\",",
+      "\"status\":\"$context.status\",",
+      "\"protocol\":\"$context.protocol\",",
       "\"responseLength\":\"$context.responseLength\"}"
     ])
   }
@@ -117,7 +117,7 @@ data "aws_iam_policy_document" "lpa_uid" {
 
     principals {
       type        = "AWS"
-      identifiers = [var.environment.allowed_arns]
+      identifiers = var.environment.allowed_arns
     }
 
     actions   = ["execute-api:Invoke"]
