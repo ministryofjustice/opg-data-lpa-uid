@@ -1,14 +1,13 @@
-data "template_file" "_" {
-  template = file("../../docs/openapi/openapi.yaml")
-  vars = {
+locals {
+  template_file = templatefile("../../docs/openapi/openapi.yaml", {
     create_case_lambda_invoke_arn = aws_lambda_function.create_case.invoke_arn
-  }
+  })
 }
 
 resource "aws_api_gateway_rest_api" "lpa_uid" {
   name        = "lpa-uid-${terraform.workspace}"
   description = "API Gateway for LPA UID - ${local.environment_name}"
-  body        = data.template_file._.rendered
+  body        = local.template_file
   tags = var.is_local ? {
     _custom_id_ = "lpa-uid"
   } : {}
@@ -29,7 +28,7 @@ resource "null_resource" "open_api" {
 }
 
 locals {
-  open_api_sha = substr(replace(base64sha256(data.template_file._.rendered), "/[^0-9A-Za-z_]/", ""), 0, 5)
+  open_api_sha = substr(replace(base64sha256(local.template_file), "/[^0-9A-Za-z_]/", ""), 0, 5)
 }
 
 
