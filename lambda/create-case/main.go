@@ -59,6 +59,7 @@ type Lambda struct {
 
 func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var data Request
+	l.logger.Print(event.Body)
 	err := json.Unmarshal([]byte(event.Body), &data)
 
 	if err != nil {
