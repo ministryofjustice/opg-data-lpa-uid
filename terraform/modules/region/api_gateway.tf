@@ -36,7 +36,9 @@ resource "aws_api_gateway_deployment" "lpa_uid" {
   rest_api_id = aws_api_gateway_rest_api.lpa_uid.id
 
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.lpa_uid.body))
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_rest_api.lpa_uid.body,
+      aws_api_gateway_rest_api_policy.lpa_uid.policy]))
   }
 
   lifecycle {
@@ -120,7 +122,7 @@ data "aws_iam_policy_document" "lpa_uid" {
     }
 
     actions   = ["execute-api:Invoke"]
-    resources = ["${aws_api_gateway_rest_api.lpa_uid.execution_arn}/${aws_api_gateway_stage.current.stage_name}/*/*"]
+    resources = ["execute-api:/${local.stage_name}/*/*"]
   }
 }
 
