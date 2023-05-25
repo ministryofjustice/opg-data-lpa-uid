@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"time"
 
@@ -59,6 +60,7 @@ type Lambda struct {
 
 func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var data Request
+	log.Print(event.Body)
 	err := json.Unmarshal([]byte(event.Body), &data)
 
 	if err != nil {
@@ -74,11 +76,16 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 		return problem.Respond()
 	}
 
+	log.Print("Request validated")
+
 	data.CreatedAt = time.Now()
 
 	// generate uid
 	for {
 		data.Uid, err = generateUID()
+
+		log.Print("UID generated: " + data.Uid)
+
 		if err != nil {
 			l.logger.Print(err)
 			return ProblemInternalServerError.Respond()
@@ -97,6 +104,8 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 			return ProblemInternalServerError.Respond()
 		}
 
+		log.Print("UID is unique (not found in dynamo)")
+
 		if result.Item == nil {
 			break
 		}
@@ -109,6 +118,8 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 		return ProblemInternalServerError.Respond()
 	}
 
+	log.Print("case marshalled ready for dynamo")
+
 	_, err = l.ddb.PutItem(&dynamodb.PutItemInput{
 		TableName: aws.String(l.tableName),
 		Item:      item,
@@ -119,6 +130,8 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 		return ProblemInternalServerError.Respond()
 	}
 
+	log.Print("case saved in dynamo")
+
 	// respond
 	response := Response{Uid: hyphenateUID(data.Uid)}
 
@@ -128,6 +141,8 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 		l.logger.Print(err)
 		return ProblemInternalServerError.Respond()
 	}
+
+	log.Print("response body created: " + string(body))
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 201,
