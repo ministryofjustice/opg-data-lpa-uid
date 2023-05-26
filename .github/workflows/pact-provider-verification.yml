@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: make build up
+      - run: make build
       - name: Verify specified Pact
         if: ${{ github.event_name == 'repository_dispatch' }}
         run: |
