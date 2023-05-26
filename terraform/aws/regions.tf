@@ -2,6 +2,9 @@ module "eu-west-1" {
   source = "../modules/region"
 
   app_version      = var.app_version
+  dynamodb_arn     = module.global.dynamodb_table.arn
+  dynamodb_name    = module.global.dynamodb_table.name
+  dynamodb_kms_key_arn = module.global.dynamodb_table.server_side_encryption[0].kms_key_arn
   environment_name = local.environment_name
   environment      = local.environment
   is_local         = local.is_local
@@ -18,8 +21,9 @@ module "eu-west-2" {
   source = "../modules/region"
 
   app_version           = var.app_version
-  dynamodb_primary_arn  = module.eu-west-1.dynamodb_arn
-  dynamodb_primary_name = module.eu-west-1.dynamodb_name
+  dynamodb_arn     = [for o in module.global.dynamodb_table.replica : o][0].arn
+  dynamodb_name    = module.global.dynamodb_table.name
+  dynamodb_kms_key_arn = [for o in module.global.dynamodb_table.replica : o][0].kms_key_arn
   environment_name      = local.environment_name
   environment           = local.environment
   is_local              = local.is_local
