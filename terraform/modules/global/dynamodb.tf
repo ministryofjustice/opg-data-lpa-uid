@@ -47,7 +47,7 @@ resource "aws_dynamodb_table" "lpa_uid" {
 }
 
 resource "aws_kms_key" "dynamodb" {
-  description             = "LPA UID Generation Service ${local.environment_name} DynamoDB"
+  description             = "LPA UID Generation Service ${var.environment_name} DynamoDB"
   deletion_window_in_days = 10
   enable_key_rotation     = true
   policy                  = data.aws_iam_policy_document.dynamodb.json
@@ -55,7 +55,7 @@ resource "aws_kms_key" "dynamodb" {
 }
 
 resource "aws_kms_replica_key" "dynamodb_eu_west_2" {
-  description             = "LPA UID Generation Service ${local.environment_name} DynamoDB eu-west-2 replica key"
+  description             = "LPA UID Generation Service ${var.environment_name} DynamoDB eu-west-2 replica key"
   deletion_window_in_days = 10
   primary_key_arn         = aws_kms_key.dynamodb.arn
   provider                = aws.eu-west-2
@@ -65,13 +65,13 @@ resource "aws_kms_replica_key" "dynamodb_eu_west_2" {
 }
 
 resource "aws_kms_alias" "dynamodb_alias_eu_west_1" {
-  name          = "alias/lpa-uid-dynamodb-${local.environment_name}"
+  name          = "alias/lpa-uid-dynamodb-${var.environment_name}"
   target_key_id = aws_kms_key.dynamodb.key_id
   provider      = aws.eu-west-1
 }
 
 resource "aws_kms_alias" "dynamodb_alias_eu_west_2" {
-  name          = "alias/lpa-uid-dynamodb-${local.environment_name}"
+  name          = "alias/lpa-uid-dynamodb-${var.environment_name}"
   target_key_id = aws_kms_replica_key.dynamodb_eu_west_2.key_id
   provider      = aws.eu-west-2
 }
