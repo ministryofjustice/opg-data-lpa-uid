@@ -13,3 +13,5 @@ secrets.auto.tfvars
 
 .structurizr
 docs/architecture/dsl/**/workspace.json
+
+/scripts/uid_tester/uid-tester
