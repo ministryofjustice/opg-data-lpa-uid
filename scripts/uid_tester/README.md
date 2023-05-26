@@ -12,5 +12,5 @@ aws-vault exec <~/.aws PROFILE NAME> -- go run uid-tester
 The tool supports custom base URLs and request bodies:
 
 ```bash
-aws-vault exec <~/.aws PROFILE NAME> -- go run uid-tester -baseUrl=https://new.base.url -body={"some": "json"}
+aws-vault exec <~/.aws PROFILE NAME> -- go run uid-tester -baseUrl=https://new.base.url -body='{"some": "json"}'
 ```
