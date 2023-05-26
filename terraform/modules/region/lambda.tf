@@ -8,7 +8,7 @@ resource "aws_lambda_function" "create_case" {
 
   environment {
     variables = {
-      AWS_DYNAMODB_TABLE_NAME = var.is_primary ? aws_dynamodb_table.lpa_uid[0].name : var.dynamodb_primary_name
+      AWS_DYNAMODB_TABLE_NAME = var.dynamodb_name
     }
   }
 

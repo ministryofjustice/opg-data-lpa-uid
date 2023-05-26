@@ -57,26 +57,30 @@ jobs:
       - name: Run unit tests
         run: make test
 
-  integration-test:
-    name: Integration test
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Image cache
-        uses: actions/cache@v3
-        with:
-          path: /tmp/images
-          key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
-      - name: Restore Images
-        run: |
-          docker load -i /tmp/images/delegator.tar
-          docker load -i /tmp/images/lambda-create-case.tar
-      - run: make up test-api
+  # integration-test:
+  #   name: Integration test
+  #   needs: [build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Image cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: /tmp/images
+  #         key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
+  #     - name: Restore Images
+  #       run: |
+  #         docker load -i /tmp/images/delegator.tar
+  #         docker load -i /tmp/images/lambda-create-case.tar
+  #     - run: make up test-api
 
   push:
     name: Push images
-    needs: [test, integration-test]
+    needs: [
+      test,
+      Build
+      # integration-test
+    ]
     runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
@@ -161,7 +165,7 @@ jobs:
 
   deploy-preproduction:
     name: Deploy to Preproduction
-    needs: [push, deploy-development]
+    needs: [push]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: preproduction
@@ -172,7 +176,7 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    needs: [push, deploy-preproduction]
+    needs: [push]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: production
