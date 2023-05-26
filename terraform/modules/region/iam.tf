@@ -38,4 +38,19 @@ data "aws_iam_policy_document" "lambda" {
     resources = ["*"]
     actions   = ["dynamodb:ListTables"]
   }
+
+  statement {
+    sid    = "DynamoDBEncryptionAccess"
+    effect = "Allow"
+
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
+    ]
+
+    resources = [
+      aws_kms_key.dynamodb.arn,
+    ]
+  }
 }
