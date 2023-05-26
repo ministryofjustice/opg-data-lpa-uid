@@ -25,12 +25,6 @@ resource "aws_dynamodb_table" "lpa_uid" {
     kms_key_arn = aws_kms_key.dynamodb.arn
   }
 
-  lifecycle {
-    ignore_changes = [
-      replica
-    ]
-  }
-
   global_secondary_index {
     name            = "source_index"
     hash_key        = "source"
@@ -43,6 +37,7 @@ resource "aws_dynamodb_table" "lpa_uid" {
     point_in_time_recovery = true
     propagate_tags         = true
   }
+
   provider = aws.eu-west-1
 }
 
@@ -50,6 +45,7 @@ resource "aws_kms_key" "dynamodb" {
   description             = "LPA UID Generation Service ${var.environment_name} DynamoDB"
   deletion_window_in_days = 10
   enable_key_rotation     = true
+  multi_region            = true
   policy                  = data.aws_iam_policy_document.dynamodb.json
   provider                = aws.eu-west-1
 }
