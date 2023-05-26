@@ -78,6 +78,7 @@ jobs:
     name: Push images
     needs: [
       test,
+      Build
       # integration-test
     ]
     runs-on: ubuntu-latest
