@@ -164,7 +164,7 @@ jobs:
 
   deploy-preproduction:
     name: Deploy to Preproduction
-    needs: [push, deploy-development]
+    needs: [push]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: preproduction
@@ -175,7 +175,7 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    needs: [push, deploy-preproduction]
+    needs: [push]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: production
