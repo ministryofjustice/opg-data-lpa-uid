@@ -31,3 +31,7 @@ variable "app_version" {
 locals {
   environment_name = "${var.environment_name}-${data.aws_region.current.name}"
 }
+
+locals {
+  policy_region_prefix = lower(replace(data.aws_region.current.name, "-", ""))
+}
