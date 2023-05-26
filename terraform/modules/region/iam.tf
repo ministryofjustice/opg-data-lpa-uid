@@ -1,13 +1,13 @@
 
 resource "aws_iam_role_policy" "lambda" {
   name   = "lpa-uid-lambda-${local.environment_name}"
-  role   = var.lambda_iam_role.id
+  role   = var.lambda_iam_role.name
   policy = data.aws_iam_policy_document.lambda.json
 }
 
 data "aws_iam_policy_document" "lambda" {
   statement {
-    sid       = "allowLogging"
+    sid       = "${local.policy_region_prefix}allowLogging"
     effect    = "Allow"
     resources = [aws_cloudwatch_log_group.lambda.arn]
     actions = [
@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "lambda" {
     ]
   }
   statement {
-    sid       = "allowDynamoAccess"
+    sid       = "${local.policy_region_prefix}allowDynamoAccess"
     effect    = "Allow"
     resources = [var.dynamodb_arn]
     actions = [
@@ -34,13 +34,13 @@ data "aws_iam_policy_document" "lambda" {
   }
   statement {
     effect    = "Allow"
-    sid       = "ListTables"
+    sid       = "${local.policy_region_prefix}ListTables"
     resources = ["*"]
     actions   = ["dynamodb:ListTables"]
   }
 
   statement {
-    sid    = "DynamoDBEncryptionAccess"
+    sid       = "${local.policy_region_prefix}DynamoDBEncryptionAccess"
     effect = "Allow"
 
     actions = [
