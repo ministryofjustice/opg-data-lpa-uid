@@ -46,5 +46,5 @@ resource "aws_route53_record" "environment_record" {
 }
 
 locals {
-  a_record = terraform.workspace == "production" ? data.aws_route53_zone.service.name : var.environment.account_name
+  a_record = terraform.workspace == "production" ? data.aws_route53_zone.service.name : var.environment_name
 }
