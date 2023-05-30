@@ -2,12 +2,13 @@ module "eu-west-1" {
   source     = "../modules/region"
   depends_on = [module.local_setup]
 
-  app_version      = "latest"
-  environment_name = local.environment_name
-  environment      = local.environment
-  is_local         = local.is_local
-  is_primary       = true
-  lambda_iam_role  = module.global.lambda_iam_role
+  app_version               = "latest"
+  dynamodb_global_table_arn = null
+  environment_name          = local.environment_name
+  environment               = local.environment
+  is_local                  = true
+  is_primary                = true
+  lambda_iam_role           = module.global.lambda_iam_role
 
   providers = {
     aws            = aws.eu-west-1
@@ -19,16 +20,17 @@ module "eu-west-2" {
   source     = "../modules/region"
   depends_on = [module.local_setup]
 
-  app_version           = "latest"
-  dynamodb_primary_arn  = module.eu-west-1.dynamodb_arn
-  dynamodb_primary_name = module.eu-west-1.dynamodb_name
-  environment_name      = local.environment_name
-  environment           = local.environment
-  is_local              = local.is_local
-  lambda_iam_role       = module.global.lambda_iam_role
+  app_version               = "latest"
+  dynamodb_global_table_arn = module.eu-west-1.dynamodb_table.arn
+  environment_name          = local.environment_name
+  environment               = local.environment
+  is_local                  = local.is_local
+  is_primary                = false
+  lambda_iam_role           = module.global.lambda_iam_role
 
   providers = {
     aws            = aws.eu-west-2
     aws.management = aws.management
   }
 }
+
