@@ -1,5 +1,8 @@
-locals {
-  environment_name = var.environment_name
+variable "environment_name" {
+  type = string
 }
 
-variable "environment_name" {}
+variable "is_local" {
+  type    = bool
+  default = false
+}

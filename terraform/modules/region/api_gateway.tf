@@ -114,6 +114,7 @@ resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
 
 data "aws_iam_policy_document" "lpa_uid" {
   statement {
+    sid       = "${local.policy_region_prefix}AllowExecutionFromAllowedARNs"
     effect = "Allow"
 
     principals {
