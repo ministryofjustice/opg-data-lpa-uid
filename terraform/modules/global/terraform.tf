@@ -7,8 +7,6 @@ terraform {
       version = ">= 4.59.0"
       configuration_aliases = [
         aws.global,
-        aws.eu-west-1,
-        aws.eu-west-2,
       ]
     }
   }

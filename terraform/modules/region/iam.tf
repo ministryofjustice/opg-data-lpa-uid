@@ -19,7 +19,10 @@ data "aws_iam_policy_document" "lambda" {
   statement {
     sid       = "${local.policy_region_prefix}allowDynamoAccess"
     effect    = "Allow"
-    resources = [var.dynamodb_arn]
+    resources = [
+      var.is_primary ? aws_dynamodb_table.lpa_uid[0].arn : aws_dynamodb_table_replica.lpa_uid[0].arn,
+      var.is_primary ? "${aws_dynamodb_table.lpa_uid[0].arn}/*" : "${aws_dynamodb_table_replica.lpa_uid[0].arn}/*",
+      ]
     actions = [
       "dynamodb:BatchGetItem",
       "dynamodb:DeleteItem",
@@ -50,7 +53,8 @@ data "aws_iam_policy_document" "lambda" {
     ]
 
     resources = [
-      var.dynamodb_kms_key_arn,
+      # var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn,
+      var.is_local ? "*" : var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn,
     ]
   }
 }
