@@ -1,9 +1,13 @@
-variable "dynamodb_primary_arn" {
-  default = ""
+variable "dynamodb_arn" {
+  type = string
 }
 
-variable "dynamodb_primary_name" {
-  default = ""
+variable "dynamodb_name" {
+  type = string
+}
+
+variable "dynamodb_kms_key_arn" {
+  type = string
 }
 
 variable "environment_name" {}
@@ -26,4 +30,8 @@ variable "app_version" {
 
 locals {
   environment_name = "${var.environment_name}-${data.aws_region.current.name}"
+}
+
+locals {
+  policy_region_prefix = lower(replace(data.aws_region.current.name, "-", ""))
 }
