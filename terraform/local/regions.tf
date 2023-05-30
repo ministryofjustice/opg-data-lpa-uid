@@ -1,9 +1,7 @@
 module "eu-west-1" {
-  source = "../modules/region"
-  depends_on = [
-    module.local_setup,
-    module.global
-  ]
+  source     = "../modules/region"
+  depends_on = [module.local_setup]
+
   app_version               = "latest"
   dynamodb_global_table_arn = null
   environment_name          = local.environment_name
@@ -19,11 +17,9 @@ module "eu-west-1" {
 }
 
 module "eu-west-2" {
-  source = "../modules/region"
-  depends_on = [
-    module.local_setup,
-    module.global
-  ]
+  source     = "../modules/region"
+  depends_on = [module.local_setup]
+
   app_version               = "latest"
   dynamodb_global_table_arn = module.eu-west-1.dynamodb_table.arn
   # dynamodb_kms_key_arn = module.eu-west-1.dynamodb_table.kms_key_arn
