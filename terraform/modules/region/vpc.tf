@@ -18,6 +18,6 @@ resource "aws_security_group_rule" "lambda_egress" {
 }
 
 data "aws_ip_ranges" "dynamodb" {
-  regions  = ["eu-west-1", "eu-west-2", ]
+  regions  = ["eu-west-1", "eu-west-2"]
   services = ["dynamodb"]
 }
