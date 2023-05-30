@@ -150,7 +150,7 @@ jobs:
 
   deploy-development:
     name: Deploy to Development
-    needs: push
+    needs: [push]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: development
@@ -161,7 +161,7 @@ jobs:
 
   deploy-preproduction:
     name: Deploy to Preproduction
-    needs: [push]
+    needs: [push, deploy-development]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: preproduction
@@ -172,7 +172,7 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    needs: [push]
+    needs: [push, deploy-preproduction]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: production
