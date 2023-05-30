@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "lpa_uid" {
-  count = var.is_primary ? 1 : 0
+  count                       = var.is_primary ? 1 : 0
   name                        = "lpa-uid-${var.environment_name}"
   billing_mode                = "PAY_PER_REQUEST"
   hash_key                    = "uid"
@@ -40,7 +40,7 @@ resource "aws_dynamodb_table" "lpa_uid" {
 }
 
 resource "aws_kms_key" "dynamodb" {
-  count = var.is_primary ? 1 : 0
+  count                   = var.is_primary ? 1 : 0
   description             = "LPA UID Generation Service ${var.environment_name} DynamoDB"
   deletion_window_in_days = 10
   enable_key_rotation     = true
@@ -49,7 +49,7 @@ resource "aws_kms_key" "dynamodb" {
 }
 
 resource "aws_kms_alias" "dynamodb_alias_primary" {
-  count = var.is_primary ? 1 : 0
+  count         = var.is_primary ? 1 : 0
   name          = "alias/lpa-uid-dynamodb-${var.environment_name}"
   target_key_id = aws_kms_key.dynamodb[0].key_id
 }
