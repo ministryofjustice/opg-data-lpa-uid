@@ -17,7 +17,7 @@ resource "aws_dynamodb_table" "lpa_uid" {
   }
 
   point_in_time_recovery {
-    enabled = true
+    enabled = var.is_local ? false : true
   }
 
   server_side_encryption {
@@ -31,11 +31,14 @@ resource "aws_dynamodb_table" "lpa_uid" {
     projection_type = "ALL"
   }
 
-  replica {
-    region_name            = "eu-west-2"
-    kms_key_arn            = aws_kms_replica_key.dynamodb_eu_west_2.arn
-    point_in_time_recovery = true
-    propagate_tags         = true
+  dynamic "replica" {
+    for_each = var.is_local ? [] : [1]
+    content {
+      region_name            = "eu-west-2"
+      kms_key_arn            = aws_kms_replica_key.dynamodb_eu_west_2[0].arn
+      point_in_time_recovery = true
+      propagate_tags         = true
+    }
   }
 
   provider = aws.eu-west-1
@@ -45,12 +48,13 @@ resource "aws_kms_key" "dynamodb" {
   description             = "LPA UID Generation Service ${var.environment_name} DynamoDB"
   deletion_window_in_days = 10
   enable_key_rotation     = true
-  multi_region            = true
+  multi_region            = var.is_local ? false : true
   policy                  = data.aws_iam_policy_document.dynamodb.json
   provider                = aws.eu-west-1
 }
 
 resource "aws_kms_replica_key" "dynamodb_eu_west_2" {
+  count = var.is_local ? 0 : 1
   description             = "LPA UID Generation Service ${var.environment_name} DynamoDB eu-west-2 replica key"
   deletion_window_in_days = 10
   primary_key_arn         = aws_kms_key.dynamodb.arn
@@ -67,8 +71,9 @@ resource "aws_kms_alias" "dynamodb_alias_eu_west_1" {
 }
 
 resource "aws_kms_alias" "dynamodb_alias_eu_west_2" {
+  count         = var.is_local ? 0 : 1
   name          = "alias/lpa-uid-dynamodb-${var.environment_name}"
-  target_key_id = aws_kms_replica_key.dynamodb_eu_west_2.key_id
+  target_key_id = aws_kms_replica_key.dynamodb_eu_west_2[0].key_id
   provider      = aws.eu-west-2
 }
 
