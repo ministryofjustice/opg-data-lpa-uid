@@ -1,13 +1,13 @@
 
 resource "aws_iam_role_policy" "lambda" {
   name   = "lpa-uid-lambda-${local.environment_name}"
-  role   = var.lambda_iam_role.id
+  role   = var.lambda_iam_role.name
   policy = data.aws_iam_policy_document.lambda.json
 }
 
 data "aws_iam_policy_document" "lambda" {
   statement {
-    sid       = "allowLogging"
+    sid       = "${local.policy_region_prefix}allowLogging"
     effect    = "Allow"
     resources = [aws_cloudwatch_log_group.lambda.arn]
     actions = [
@@ -17,9 +17,12 @@ data "aws_iam_policy_document" "lambda" {
     ]
   }
   statement {
-    sid       = "allowDynamoAccess"
-    effect    = "Allow"
-    resources = [var.is_primary ? aws_dynamodb_table.lpa_uid[0].arn : aws_dynamodb_table_replica.lpa_uid[0].arn]
+    sid    = "${local.policy_region_prefix}allowDynamoAccess"
+    effect = "Allow"
+    resources = [
+      var.is_primary ? aws_dynamodb_table.lpa_uid[0].arn : aws_dynamodb_table_replica.lpa_uid[0].arn,
+      var.is_primary ? "${aws_dynamodb_table.lpa_uid[0].arn}/*" : "${aws_dynamodb_table_replica.lpa_uid[0].arn}/*",
+    ]
     actions = [
       "dynamodb:BatchGetItem",
       "dynamodb:DeleteItem",
@@ -34,13 +37,13 @@ data "aws_iam_policy_document" "lambda" {
   }
   statement {
     effect    = "Allow"
-    sid       = "ListTables"
+    sid       = "${local.policy_region_prefix}ListTables"
     resources = ["*"]
     actions   = ["dynamodb:ListTables"]
   }
 
   statement {
-    sid    = "DynamoDBEncryptionAccess"
+    sid    = "${local.policy_region_prefix}DynamoDBEncryptionAccess"
     effect = "Allow"
 
     actions = [
@@ -50,7 +53,8 @@ data "aws_iam_policy_document" "lambda" {
     ]
 
     resources = [
-      aws_kms_key.dynamodb.arn,
+      # var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn,
+      var.is_local ? "*" : var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn,
     ]
   }
 }

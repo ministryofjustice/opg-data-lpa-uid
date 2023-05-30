@@ -38,7 +38,7 @@ resource "aws_api_gateway_deployment" "lpa_uid" {
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_rest_api.lpa_uid.body,
-      var.environment.allowed_arns]))
+    var.environment.allowed_arns]))
   }
 
   lifecycle {
@@ -114,6 +114,7 @@ resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
 
 data "aws_iam_policy_document" "lpa_uid" {
   statement {
+    sid    = "${local.policy_region_prefix}AllowExecutionFromAllowedARNs"
     effect = "Allow"
 
     principals {
