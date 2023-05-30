@@ -48,7 +48,7 @@ resource "aws_kms_key" "dynamodb" {
   policy                  = data.aws_iam_policy_document.dynamodb_kms.json
 }
 
-resource "aws_kms_alias" "dynamodb_alias_eu_west_1" {
+resource "aws_kms_alias" "dynamodb_alias_primary" {
   count = var.is_primary ? 1 : 0
   name          = "alias/lpa-uid-dynamodb-${var.environment_name}"
   target_key_id = aws_kms_key.dynamodb[0].key_id
