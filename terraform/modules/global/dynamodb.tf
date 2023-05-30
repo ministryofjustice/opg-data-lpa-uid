@@ -31,17 +31,20 @@ resource "aws_dynamodb_table" "lpa_uid" {
     projection_type = "ALL"
   }
 
-  dynamic "replica" {
-    for_each = var.is_local ? [] : [1]
-    content {
-      region_name            = "eu-west-2"
-      kms_key_arn            = aws_kms_replica_key.dynamodb_eu_west_2[0].arn
-      point_in_time_recovery = true
-      propagate_tags         = true
-    }
+  lifecycle {
+    ignore_changes = [
+      replica
+    ]
   }
 
   provider = aws.eu-west-1
+}
+
+resource "aws_dynamodb_table_replica" "lpa_uid_eu_west_2" {
+  global_table_arn = aws_dynamodb_table.lpa_uid.arn
+  kms_key_arn = var.is_local ? null : aws_kms_replica_key.dynamodb_eu_west_2[0].arn
+  point_in_time_recovery = var.is_local ? false : true
+  provider = aws.eu-west-2
 }
 
 resource "aws_kms_key" "dynamodb" {
