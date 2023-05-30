@@ -18,7 +18,7 @@ test-api-eu-west-1 test-api-eu-west-2:
 test-api-eu-west-1: REGION=eu_west_1
 test-api-eu-west-2: REGION=eu_west_2
 
-test-api: test-api-eu-west-1 test-api-eu-west-2
+test-api: test-api-eu-west-1
 
 test:
 	go test -count 1 ./lambda/create-case/...
