@@ -28,7 +28,7 @@ module "eu-west-2" {
     ]
   app_version          = "latest"
   dynamodb_arn         = module.global.dynamodb_table_replica.arn
-  dynamodb_kms_key_arn = module.global.dynamodb_table_replica.kms_key_arn
+  dynamodb_kms_key_arn = "*"
   dynamodb_name        = module.global.dynamodb_table.name
   environment_name     = local.environment_name
   environment          = local.environment
