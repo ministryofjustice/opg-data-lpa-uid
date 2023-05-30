@@ -17,12 +17,12 @@ data "aws_iam_policy_document" "lambda" {
     ]
   }
   statement {
-    sid       = "${local.policy_region_prefix}allowDynamoAccess"
-    effect    = "Allow"
+    sid    = "${local.policy_region_prefix}allowDynamoAccess"
+    effect = "Allow"
     resources = [
       var.is_primary ? aws_dynamodb_table.lpa_uid[0].arn : aws_dynamodb_table_replica.lpa_uid[0].arn,
       var.is_primary ? "${aws_dynamodb_table.lpa_uid[0].arn}/*" : "${aws_dynamodb_table_replica.lpa_uid[0].arn}/*",
-      ]
+    ]
     actions = [
       "dynamodb:BatchGetItem",
       "dynamodb:DeleteItem",
@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "lambda" {
   }
 
   statement {
-    sid       = "${local.policy_region_prefix}DynamoDBEncryptionAccess"
+    sid    = "${local.policy_region_prefix}DynamoDBEncryptionAccess"
     effect = "Allow"
 
     actions = [
