@@ -1,8 +1,8 @@
 module "global" {
   source = "../modules/global"
-
+  depends_on           = [module.local_setup]
   environment_name = local.environment_name
-
+  is_local = true
   providers = {
     aws.global    = aws.global
     aws.eu-west-1 = aws.eu-west-1
