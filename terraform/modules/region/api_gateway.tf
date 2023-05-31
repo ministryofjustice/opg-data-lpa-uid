@@ -96,9 +96,8 @@ resource "aws_api_gateway_domain_name" "lpa_uid" {
 
 resource "aws_api_gateway_base_path_mapping" "mapping" {
   api_id      = aws_api_gateway_rest_api.lpa_uid.id
-  stage_name  = aws_api_gateway_deployment.lpa_uid.stage_name
+  stage_name  = aws_api_gateway_stage.current.stage_name
   domain_name = aws_api_gateway_domain_name.lpa_uid.domain_name
-  base_path   = aws_api_gateway_deployment.lpa_uid.stage_name
 }
 
 resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
