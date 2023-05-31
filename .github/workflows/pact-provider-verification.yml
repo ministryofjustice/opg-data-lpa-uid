@@ -42,6 +42,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           docker-compose run --rm pact-verifier \
+            --loglevel=debug \
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=${{ github.head_ref }} \
             --consumer-version-selectors='{"mainBranch": true}'
