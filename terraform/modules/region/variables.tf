@@ -8,6 +8,11 @@ variable "dynamodb_kms_key_arn" {
   default = "*"
 }
 
+variable "dns_weighting" {
+  type    = number
+  default = 50
+}
+
 variable "environment_name" {}
 
 variable "environment" {}

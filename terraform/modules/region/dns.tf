@@ -33,7 +33,7 @@ resource "aws_route53_record" "environment_record" {
   set_identifier = data.aws_region.current.name
 
   weighted_routing_policy {
-    weight = 50
+    weight = var.dns_weighting
   }
 
   alias {
