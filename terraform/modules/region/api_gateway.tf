@@ -13,7 +13,11 @@ resource "aws_api_gateway_rest_api" "lpa_uid" {
   } : {}
 
   endpoint_configuration {
-    types = ["REGIONAL"]
+    # types = ["REGIONAL"]
+    types = ["PRIVATE"]
+    vpc_endpoint_ids = [
+      aws_vpc_endpoint.execute_api.id
+    ]
   }
 
   lifecycle {
@@ -38,7 +42,7 @@ resource "aws_api_gateway_deployment" "lpa_uid" {
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_rest_api.lpa_uid.body,
-      var.environment.allowed_arns]))
+    var.environment.allowed_arns]))
   }
 
   lifecycle {
@@ -84,21 +88,21 @@ output "api_stage_uri" {
   value = var.is_local ? "http://${aws_api_gateway_rest_api.lpa_uid.id}.execute-api.localhost.localstack.cloud:4566/${aws_api_gateway_stage.current.stage_name}/" : aws_api_gateway_stage.current.invoke_url
 }
 
-resource "aws_api_gateway_domain_name" "lpa_uid" {
-  domain_name              = terraform.workspace == "production" ? data.aws_route53_zone.service.name : "${local.a_record}.${data.aws_route53_zone.service.name}"
-  regional_certificate_arn = aws_acm_certificate.environment.arn
-  security_policy          = "TLS_1_2"
+# resource "aws_api_gateway_domain_name" "lpa_uid" {
+#   domain_name              = terraform.workspace == "production" ? data.aws_route53_zone.service.name : "${local.a_record}.${data.aws_route53_zone.service.name}"
+#   regional_certificate_arn = aws_acm_certificate.environment.arn
+#   security_policy          = "TLS_1_2"
 
-  endpoint_configuration {
-    types = ["REGIONAL"]
-  }
-}
+#   endpoint_configuration {
+#     types = ["REGIONAL"]
+#   }
+# }
 
-resource "aws_api_gateway_base_path_mapping" "mapping" {
-  api_id      = aws_api_gateway_rest_api.lpa_uid.id
-  stage_name  = aws_api_gateway_stage.current.stage_name
-  domain_name = aws_api_gateway_domain_name.lpa_uid.domain_name
-}
+# resource "aws_api_gateway_base_path_mapping" "mapping" {
+#   api_id      = aws_api_gateway_rest_api.lpa_uid.id
+#   stage_name  = aws_api_gateway_stage.current.stage_name
+#   domain_name = aws_api_gateway_domain_name.lpa_uid.domain_name
+# }
 
 resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
   rest_api_id = aws_api_gateway_rest_api.lpa_uid.id
@@ -111,22 +115,43 @@ resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
   }
 }
 
-data "aws_iam_policy_document" "lpa_uid" {
+# data "aws_iam_policy_document" "lpa_uid" {
+#   statement {
+#     sid    = "${local.policy_region_prefix}AllowExecutionFromAllowedARNs"
+#     effect = "Allow"
+
+#     principals {
+#       type        = "AWS"
+#       identifiers = var.environment.allowed_arns
+#     }
+
+#     actions   = ["execute-api:Invoke"]
+#     resources = ["${aws_api_gateway_rest_api.lpa_uid.execution_arn}/${aws_api_gateway_stage.current.stage_name}/*/*"]
+#   }
+# }
+
+data "aws_iam_policy_document" "lpa_uid_private_dns" {
   statement {
-    sid    = "${local.policy_region_prefix}AllowExecutionFromAllowedARNs"
     effect = "Allow"
+    sid    = "${local.policy_region_prefix}AllowExecutionFromAllowedARNs"
 
     principals {
       type        = "AWS"
-      identifiers = var.environment.allowed_arns
+      identifiers = ["*"]
     }
 
     actions   = ["execute-api:Invoke"]
     resources = ["${aws_api_gateway_rest_api.lpa_uid.execution_arn}/${aws_api_gateway_stage.current.stage_name}/*/*"]
+
+    condition {
+      test     = "StringNotEquals"
+      variable = "aws:SourceVpc"
+      values   = ["vpce-09af258ad113eb921"]
+    }
   }
 }
 
 resource "aws_api_gateway_rest_api_policy" "lpa_uid" {
   rest_api_id = aws_api_gateway_rest_api.lpa_uid.id
-  policy      = data.aws_iam_policy_document.lpa_uid.json
+  policy      = data.aws_iam_policy_document.lpa_uid_private_dns.json
 }

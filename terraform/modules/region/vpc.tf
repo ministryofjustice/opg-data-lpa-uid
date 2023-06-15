@@ -21,3 +21,17 @@ data "aws_ip_ranges" "dynamodb" {
   regions  = ["eu-west-1", "eu-west-2"]
   services = ["dynamodb"]
 }
+
+data "aws_availability_zones" "available" {
+}
+
+data "aws_subnet" "private" {
+  count             = 3
+  vpc_id            = data.aws_vpc.sirius.id
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  filter {
+    name   = "tag:Name"
+    values = ["private*"]
+  }
+}
