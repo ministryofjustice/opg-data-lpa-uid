@@ -24,10 +24,6 @@ data "aws_security_group" "execute_api" {
   vpc_id = data.aws_vpc.sirius.id
 }
 
-# resource "aws_vpc_security_group_ingress_rule" "example" {
-#   security_group_id            = data.aws_security_group.execute_api.id
-#   from_port                    = 443
-#   to_port                      = 443
-#   ip_protocol                  = "tcp"
-#   referenced_security_group_id = module.app.app_ecs_service_security_group.id
-# }
+output "vpc_endpoint_dns" {
+  value = aws_vpc_endpoint.execute_api.dns_entry[0].dns_name
+}
