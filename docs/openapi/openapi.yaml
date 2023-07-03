@@ -83,6 +83,43 @@ paths:
         httpMethod: "POST"
         type: "aws_proxy"
         contentHandling: "CONVERT_TO_TEXT"
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint for external services to consume
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                additionalProperties: false
+        "503":
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Unhealthy
+                additionalProperties: false
+      x-amazon-apigateway-auth:
+        type: "AWS_IAM"
+      x-amazon-apigateway-integration:
+        type: "mock"
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: "{\"status\":ok}"
+
 components:
   schemas:
     AbstractError:
