@@ -11,7 +11,14 @@ up:
 
 test-api-eu-west-1 test-api-eu-west-2:
 	cd terraform/local && curl \
+		-XPOST $$(terraform output -raw api_stage_uri_$(REGION))cases \
+		-H 'Content-type:application/json' \
+		-d '{"source":"APPLICANT","type":"hw","donor":{"name":"Jack Rubik","dob":"1938-03-18","postcode":"W8A0IK"}}'
+	@echo ""
+
+	cd terraform/local && curl \
 		$$(terraform output -raw api_stage_uri_$(REGION))health
+	@echo ""
 
 test-api-eu-west-1: REGION=eu_west_1
 test-api-eu-west-2: REGION=eu_west_2
