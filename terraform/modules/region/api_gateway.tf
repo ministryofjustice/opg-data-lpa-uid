@@ -38,7 +38,7 @@ resource "aws_api_gateway_deployment" "lpa_uid" {
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_rest_api.lpa_uid.body,
-      var.environment.allowed_arns]))
+    var.environment.allowed_arns]))
   }
 
   lifecycle {
@@ -98,6 +98,11 @@ resource "aws_api_gateway_base_path_mapping" "mapping" {
   api_id      = aws_api_gateway_rest_api.lpa_uid.id
   stage_name  = aws_api_gateway_stage.current.stage_name
   domain_name = aws_api_gateway_domain_name.lpa_uid.domain_name
+
+  lifecycle {
+    create_before_destroy = true
+    replace_triggered_by  = [null_resource.open_api]
+  }
 }
 
 resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
