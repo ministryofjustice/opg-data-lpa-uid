@@ -88,7 +88,7 @@ paths:
       operationId: healthCheck
       summary: Health check endpoint for external services to consume
       responses:
-        "200":
+        200:
           description: Healthy
           content:
             application/json:
@@ -99,7 +99,7 @@ paths:
                     type: string
                     example: OK
                 additionalProperties: false
-        "503":
+        503:
           description: Service unavailable
           content:
             application/json:
