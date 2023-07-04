@@ -116,7 +116,7 @@ paths:
         type: "mock"
         responses:
           default:
-            statusCode: "200"
+            statusCode: 200
             responseTemplates:
               application/json: "{\"status\":\"ok\"}"
 
