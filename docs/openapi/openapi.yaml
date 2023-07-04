@@ -118,7 +118,7 @@ paths:
           default:
             statusCode: "200"
             responseTemplates:
-              application/json: "{\"status\":ok}"
+              application/json: "{\"status\":\"ok\"}"
 
 components:
   schemas:
