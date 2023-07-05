@@ -119,9 +119,9 @@ paths:
             statusCode: 200
             responseTemplates:
               application/json: "{\"status\":\"ok\", \"statusCode\":200}"
-            requestTemplates:
-              application/json: "{\"statusCode\": 200}"
-            passthroughBehavior: "when_no_templates"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_templates"
 
 components:
   schemas:
