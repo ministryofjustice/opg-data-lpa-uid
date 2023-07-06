@@ -37,7 +37,7 @@ resource "aws_api_gateway_deployment" "lpa_uid" {
 
   triggers = {
     redeployment = sha1(jsonencode([
-      aws_api_gateway_rest_api.lpa_uid.body,
+      aws_api_gateway_rest_api.lpa_uid,
     var.environment.allowed_arns]))
   }
 
