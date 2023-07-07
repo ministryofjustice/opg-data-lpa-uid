@@ -46,9 +46,7 @@ locals {
 }
 
 resource "aws_api_gateway_stage" "current" {
-  depends_on = [
-    aws_cloudwatch_log_group.lpa_uid,
-  ]
+  depends_on           = [aws_cloudwatch_log_group.lpa_uid]
   deployment_id        = aws_api_gateway_deployment.lpa_uid.id
   rest_api_id          = aws_api_gateway_rest_api.lpa_uid.id
   stage_name           = local.stage_name
