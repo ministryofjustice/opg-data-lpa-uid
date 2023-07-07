@@ -111,6 +111,8 @@ resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
 }
 
 data "aws_iam_policy_document" "lpa_uid" {
+  policy_id = "lpa-uid-${terraform.workspace}-${data.aws_region.current.name}-resource-policy"
+
   statement {
     sid    = "${local.policy_region_prefix}AllowExecutionFromAllowedARNs"
     effect = "Allow"
