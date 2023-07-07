@@ -52,7 +52,6 @@ resource "aws_api_gateway_stage" "current" {
   stage_name           = local.stage_name
   xray_tracing_enabled = true
 
-
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.lpa_uid.arn
     format = join("", [
