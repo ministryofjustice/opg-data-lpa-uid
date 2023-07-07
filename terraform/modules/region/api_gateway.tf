@@ -100,7 +100,6 @@ resource "aws_api_gateway_base_path_mapping" "mapping" {
 
   lifecycle {
     create_before_destroy = true
-    # replace_triggered_by  = [null_resource.open_api]
   }
 }
 
