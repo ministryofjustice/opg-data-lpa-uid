@@ -15,22 +15,11 @@ resource "aws_api_gateway_rest_api" "lpa_uid" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
-
-  lifecycle {
-    replace_triggered_by = [null_resource.open_api]
-  }
-}
-
-resource "null_resource" "open_api" {
-  triggers = {
-    open_api_sha = local.open_api_sha
-  }
 }
 
 locals {
   open_api_sha = substr(replace(base64sha256(local.template_file), "/[^0-9A-Za-z_]/", ""), 0, 5)
 }
-
 
 resource "aws_api_gateway_deployment" "lpa_uid" {
   rest_api_id = aws_api_gateway_rest_api.lpa_uid.id
@@ -38,12 +27,18 @@ resource "aws_api_gateway_deployment" "lpa_uid" {
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_rest_api.lpa_uid.body,
-    var.environment.allowed_arns]))
+      var.environment.allowed_arns
+    ]))
   }
 
   lifecycle {
     create_before_destroy = true
   }
+
+  depends_on = [
+    aws_api_gateway_rest_api.lpa_uid,
+    aws_api_gateway_rest_api_policy.lpa_uid
+  ]
 }
 
 locals {
@@ -51,11 +46,11 @@ locals {
 }
 
 resource "aws_api_gateway_stage" "current" {
-  depends_on           = [aws_cloudwatch_log_group.lpa_uid]
   deployment_id        = aws_api_gateway_deployment.lpa_uid.id
   rest_api_id          = aws_api_gateway_rest_api.lpa_uid.id
   stage_name           = local.stage_name
   xray_tracing_enabled = true
+
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.lpa_uid.arn
@@ -101,7 +96,6 @@ resource "aws_api_gateway_base_path_mapping" "mapping" {
 
   lifecycle {
     create_before_destroy = true
-    replace_triggered_by  = [null_resource.open_api]
   }
 }
 
@@ -127,7 +121,7 @@ data "aws_iam_policy_document" "lpa_uid" {
     }
 
     actions   = ["execute-api:Invoke"]
-    resources = ["${aws_api_gateway_rest_api.lpa_uid.execution_arn}/${aws_api_gateway_stage.current.stage_name}/*/*"]
+    resources = ["*"]
   }
 }
 
