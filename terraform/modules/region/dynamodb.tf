@@ -23,7 +23,7 @@ resource "aws_dynamodb_table" "lpa_uid" {
 
   server_side_encryption {
     enabled     = true
-    kms_key_arn = aws_kms_key.dynamodb[0].arn
+    kms_key_arn = var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn
   }
 
   global_secondary_index {
