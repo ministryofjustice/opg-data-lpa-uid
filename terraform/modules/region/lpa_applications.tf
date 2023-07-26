@@ -107,8 +107,7 @@ resource "aws_cloudwatch_event_rule" "receive_insert" {
   event_bus_name = aws_cloudwatch_event_bus.lpa_applications[0].name
 
   event_pattern  = jsonencode({
-    source      = ["lpa-applications"],
-    detail-type = ["insert"]
+    account = [local.environment.account_id]
   })
 }
 
