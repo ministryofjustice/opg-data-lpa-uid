@@ -1,15 +1,3 @@
-# Send notification to event bridge when LPA application is made
-resource "aws_cloudwatch_event_bus" "lpa_applications" {
-  count = var.is_primary ? 1 : 0
-  name  = "${var.environment_name}-lpa-applications"
-}
-
-resource "aws_cloudwatch_event_archive" "lpa_applications" {
-  count            = var.is_primary ? 1 : 0
-  name             = "${var.environment_name}-lpa-applications"
-  event_source_arn = aws_cloudwatch_event_bus.lpa_applications[0].arn
-}
-
 # Event pipe to send events from dynamodb stream to event bus
 resource "aws_pipes_pipe" "lpa_applications" {
   count         = var.is_primary ? 1 : 0
@@ -20,7 +8,7 @@ resource "aws_pipes_pipe" "lpa_applications" {
   name_prefix   = null
   role_arn      = aws_iam_role.lpa_applications_pipe[0].arn
   source        = aws_dynamodb_table.lpa_uid[0].stream_arn
-  target        = aws_cloudwatch_event_bus.lpa_applications[0].arn
+  target        = var.target_event_bus_arn
   source_parameters {
     dynamodb_stream_parameters {
       batch_size                         = 1
@@ -95,33 +83,6 @@ data "aws_iam_policy_document" "lpa_applications_eventbus_target" {
       "events:PutEvents"
     ]
     effect    = "Allow"
-    resources = aws_cloudwatch_event_bus.lpa_applications[*].arn
+    resources = [var.target_event_bus_arn]
   }
-}
-
-# Temporary SQS queue to enable debugging of events
-resource "aws_cloudwatch_event_rule" "receive_insert" {
-  count          = var.is_primary ? 1 : 0
-  name           = "${var.environment_name}-receive-insert-lpa-applications"
-  description    = "put insert events from event bus onto queue"
-  event_bus_name = aws_cloudwatch_event_bus.lpa_applications[0].name
-
-  event_pattern  = jsonencode({
-    account = [local.environment.account_id]
-  })
-}
-
-resource "aws_sqs_queue" "receive_insert" {
-  count                       = var.is_primary ? 1 : 0
-  name                        = "${var.environment_name}-receive-insert-lpa-applications"
-  fifo_queue                  = false
-  content_based_deduplication = false
-}
-
-resource "aws_cloudwatch_event_target" "receive_insert" {
-  count          = var.is_primary ? 1 : 0
-  target_id      = "${var.environment_name}-receive-insert-lpa-applications"
-  arn            = aws_sqs_queue.receive_insert[0].arn
-  event_bus_name = aws_cloudwatch_event_bus.lpa_applications[0].name
-  rule           = aws_cloudwatch_event_rule.receive_insert[0].name
 }
