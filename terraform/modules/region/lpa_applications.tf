@@ -50,14 +50,14 @@ data "aws_iam_policy_document" "lpa_applications_assume_role" {
   }
 }
 
-resource "aws_iam_role_policy" "lpa_applications_pipe_source" {
+resource "aws_iam_role_policy" "lpa_applications_policy" {
   count  = var.is_primary ? 1 : 0
-  name   = "${var.environment_name}-DynamoDbPipeSource"
-  policy = data.aws_iam_policy_document.lpa_applications_dynamodb_source.json
+  name   = "${var.environment_name}-policy-${data.aws_region.current.name}"
+  policy = data.aws_iam_policy_document.lpa_applications_policy.json
   role   = aws_iam_role.lpa_applications_pipe[0].id
 }
 
-data "aws_iam_policy_document" "lpa_applications_dynamodb_source" {
+data "aws_iam_policy_document" "lpa_applications_policy" {
   statement {
     actions = [
       "dynamodb:DescribeStream",
@@ -68,21 +68,20 @@ data "aws_iam_policy_document" "lpa_applications_dynamodb_source" {
     effect    = "Allow"
     resources = aws_dynamodb_table.lpa_uid[*].stream_arn
   }
-}
 
-resource "aws_iam_role_policy" "lpa_applications_pipe_target" {
-  count  = var.is_primary ? 1 : 0
-  name   = "${var.environment_name}-EventBusPipeTarget"
-  policy = data.aws_iam_policy_document.lpa_applications_eventbus_target.json
-  role   = aws_iam_role.lpa_applications_pipe[0].id
-}
-
-data "aws_iam_policy_document" "lpa_applications_eventbus_target" {
   statement {
     actions = [
       "events:PutEvents"
     ]
     effect    = "Allow"
     resources = [var.target_event_bus_arn]
+  }
+
+  statement {
+    actions = [
+      "kms:Decrypt"
+    ]
+    effect    = "Allow"
+    resources = [var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn]
   }
 }
