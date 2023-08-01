@@ -9,6 +9,7 @@ resource "aws_pipes_pipe" "lpa_applications" {
   role_arn      = aws_iam_role.lpa_applications_pipe[0].arn
   source        = aws_dynamodb_table.lpa_uid[0].stream_arn
   target        = var.target_event_bus_arn
+
   source_parameters {
     dynamodb_stream_parameters {
       batch_size                         = 1
@@ -18,6 +19,33 @@ resource "aws_pipes_pipe" "lpa_applications" {
       on_partial_batch_item_failure      = null
       parallelization_factor             = 1
       starting_position                  = "LATEST"
+    }
+
+    filter_criteria {
+      filter {
+        pattern = jsonencode({
+          eventName = ["INSERT"],
+        })
+      }
+    }
+  }
+
+  target_parameters {
+    input_template = jsonencode({
+      uid        = "<$.dynamodb.NewImage.uid.S>",
+      source     = "<$.dynamodb.NewImage.source.S>",
+      type       = "<$.dynamodb.NewImage.type.S>",
+      created_at = "<$.dynamodb.NewImage.created_at.S>",
+      donor = {
+        name     = "<$.dynamodb.NewImage.donor.M.name.S>",
+        dob      = "<$.dynamodb.NewImage.donor.M.dob.S>",
+        postcode = "<$.dynamodb.NewImage.donor.M.postcode.S>",
+      }
+    })
+
+    eventbridge_event_bus_parameters {
+      source      = "opg.poas.uid"
+      detail_type = "created"
     }
   }
 }
