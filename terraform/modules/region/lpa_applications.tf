@@ -1,6 +1,6 @@
 # Event pipe to send events from dynamodb stream to event bus
 resource "aws_pipes_pipe" "lpa_applications" {
-  count         = var.is_primary ? 1 : 0
+  count         = var.is_primary && !var.is_local ? 1 : 0
   name          = "${var.environment_name}-lpa-applications"
   description   = "capture events from dynamodb stream and pass to event bus"
   desired_state = "RUNNING"
@@ -79,13 +79,15 @@ data "aws_iam_policy_document" "lpa_applications_assume_role" {
 }
 
 resource "aws_iam_role_policy" "lpa_applications_policy" {
-  count  = var.is_primary ? 1 : 0
+  count  = var.is_primary && !var.is_local ? 1 : 0
   name   = "${var.environment_name}-policy-${data.aws_region.current.name}"
-  policy = data.aws_iam_policy_document.lpa_applications_policy.json
+  policy = data.aws_iam_policy_document.lpa_applications_policy[0].json
   role   = aws_iam_role.lpa_applications_pipe[0].id
 }
 
 data "aws_iam_policy_document" "lpa_applications_policy" {
+  count  = var.is_local ? 0 : 1
+
   statement {
     actions = [
       "dynamodb:DescribeStream",
