@@ -31,6 +31,10 @@ variable "app_version" {
   type = string
 }
 
+variable "target_event_bus_arn" {
+  type = string
+}
+
 locals {
   environment_name     = "${var.environment_name}-${data.aws_region.current.name}"
   policy_region_prefix = lower(replace(data.aws_region.current.name, "-", ""))
