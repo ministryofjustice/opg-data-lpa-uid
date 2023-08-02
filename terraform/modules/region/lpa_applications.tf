@@ -32,10 +32,10 @@ resource "aws_pipes_pipe" "lpa_applications" {
 
   target_parameters {
     input_template = jsonencode({
-      uid        = "<$.dynamodb.NewImage.uid.S>",
-      source     = "<$.dynamodb.NewImage.source.S>",
-      type       = "<$.dynamodb.NewImage.type.S>",
-      created_at = "<$.dynamodb.NewImage.created_at.S>",
+      uid       = "<$.dynamodb.NewImage.uid.S>",
+      source    = "<$.dynamodb.NewImage.source.S>",
+      type      = "<$.dynamodb.NewImage.type.S>",
+      createdAt = "<$.dynamodb.NewImage.created_at.S>",
       donor = {
         name     = "<$.dynamodb.NewImage.donor.M.name.S>",
         dob      = "<$.dynamodb.NewImage.donor.M.dob.S>",
@@ -86,7 +86,7 @@ resource "aws_iam_role_policy" "lpa_applications_policy" {
 }
 
 data "aws_iam_policy_document" "lpa_applications_policy" {
-  count  = var.is_local ? 0 : 1
+  count = var.is_local ? 0 : 1
 
   statement {
     actions = [
