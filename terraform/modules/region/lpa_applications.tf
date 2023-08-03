@@ -31,17 +31,19 @@ resource "aws_pipes_pipe" "lpa_applications" {
   }
 
   target_parameters {
-    input_template = jsonencode({
-      uid       = "<$.dynamodb.NewImage.uid.S>",
-      source    = "<$.dynamodb.NewImage.source.S>",
-      type      = "<$.dynamodb.NewImage.type.S>",
-      createdAt = "<$.dynamodb.NewImage.created_at.S>",
-      donor = {
-        name     = "<$.dynamodb.NewImage.donor.M.name.S>",
-        dob      = "<$.dynamodb.NewImage.donor.M.dob.S>",
-        postcode = "<$.dynamodb.NewImage.donor.M.postcode.S>",
-      }
-    })
+    input_template = <<EOT
+    {
+      "createdAt": "<$.dynamodb.NewImage.created_at.S>",
+      "donor": {
+        "dob": "<$.dynamodb.NewImage.donor.M.dob.S>",
+        "name": "<$.dynamodb.NewImage.donor.M.name.S>",
+        "postcode": "<$.dynamodb.NewImage.donor.M.postcode.S>"
+      },
+      "source": "<$.dynamodb.NewImage.source.S>",
+      "type": "<$.dynamodb.NewImage.type.S>",
+      "uid": "<$.dynamodb.NewImage.uid.S>"
+    }
+    EOT
 
     eventbridge_event_bus_parameters {
       source      = "opg.poas.uid"
