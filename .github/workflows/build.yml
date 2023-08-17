@@ -121,6 +121,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
+          mask-password: true
           registries: 311462405659
 
       - name: Image cache
@@ -176,6 +177,17 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: production
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy-integration:
+    name: Deploy to Integration
+    needs: [push, deploy-production]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      workspace_name: integration
       version_tag: ${{ needs.push.outputs.tag }}
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
