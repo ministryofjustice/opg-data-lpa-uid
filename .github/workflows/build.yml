@@ -183,7 +183,7 @@ jobs:
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-integration:
-    name: Deploy to Production
+    name: Deploy to Integration
     needs: [push, deploy-production]
     uses: ./.github/workflows/deploy.yml
     with:
