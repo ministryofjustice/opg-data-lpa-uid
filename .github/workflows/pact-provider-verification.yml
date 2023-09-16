@@ -15,7 +15,7 @@ jobs:
     name: Provider verification
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: make build up
       - name: Verify specified Pact
         if: ${{ github.event_name == 'repository_dispatch' }}
