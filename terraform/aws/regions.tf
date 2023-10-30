@@ -9,7 +9,6 @@ module "eu-west-1" {
   is_local                  = false
   is_primary                = true
   lambda_iam_role           = module.global.lambda_iam_role
-  target_event_bus_arn      = local.environment.event_bus_arn
 
   providers = {
     aws            = aws.eu-west-1
@@ -29,7 +28,6 @@ module "eu-west-2" {
   is_local                  = false
   is_primary                = false
   lambda_iam_role           = module.global.lambda_iam_role
-  target_event_bus_arn      = local.environment.event_bus_arn
 
   providers = {
     aws            = aws.eu-west-2
