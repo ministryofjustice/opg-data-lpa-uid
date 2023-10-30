@@ -24,7 +24,6 @@ variable "environments" {
       account_id    = string
       account_name  = string
       allowed_arns  = list(string)
-      event_bus_arn = string
     })
   )
 }
