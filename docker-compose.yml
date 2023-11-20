@@ -26,7 +26,7 @@ services:
     entrypoint: /var/task/main
 
   localstack:
-    image: localstack/localstack:1.4
+    image: localstack/localstack:3.0
     depends_on: [delegator]
     ports:
       - "4566:4566"
