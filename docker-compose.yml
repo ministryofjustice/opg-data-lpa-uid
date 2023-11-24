@@ -17,17 +17,9 @@ services:
       - "./lambda/.aws-lambda-rie:/aws-lambda"
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
 
-  delegator:
-    image: delegator
-    depends_on: [lambda-create-case]
-    build:
-      context: ./delegator
-      dockerfile: ../lambda/Dockerfile
-    entrypoint: /var/task/main
-
   localstack:
-    image: localstack/localstack:1.4
-    depends_on: [delegator]
+    image: localstack/localstack:3.0
+    depends_on: [lambda-create-case]
     ports:
       - "4566:4566"
     volumes:
@@ -35,10 +27,7 @@ services:
     networks:
       default:
         aliases:
-          - "lpa-uid.execute-api.localhost.localstack.cloud"
-    environment:
-      LAMBDA_FORWARD_URL: http://delegator:8080
-      DOCKER_HOST: unix:///var/run/docker.sock
+          - "lpauid.execute-api.localhost.localstack.cloud"
     healthcheck:
       test: ["CMD-SHELL", "curl http://localhost:4566 || exit 1"]
       interval: 15s
@@ -50,7 +39,7 @@ services:
     image: pactfoundation/pact-ref-verifier
     entrypoint:
       - pact_verifier_cli
-      - --hostname=lpa-uid.execute-api.localhost.localstack.cloud
+      - --hostname=lpauid.execute-api.localhost.localstack.cloud
       - --port=4566
       - --base-path=/current/
       - --broker-url=https://pact-broker.api.opg.service.justice.gov.uk/
