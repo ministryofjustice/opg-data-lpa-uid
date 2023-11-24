@@ -1,7 +1,7 @@
 SHELL = '/bin/bash'
 
 build:
-	docker-compose build --parallel lambda-create-case delegator
+	docker-compose build --parallel lambda-create-case
 
 up:
 	docker-compose up -d localstack

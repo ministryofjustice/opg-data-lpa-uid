@@ -17,17 +17,9 @@ services:
       - "./lambda/.aws-lambda-rie:/aws-lambda"
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
 
-  delegator:
-    image: delegator
-    depends_on: [lambda-create-case]
-    build:
-      context: ./delegator
-      dockerfile: ../lambda/Dockerfile
-    entrypoint: /var/task/main
-
   localstack:
     image: localstack/localstack:3.0
-    depends_on: [delegator]
+    depends_on: [lambda-create-case]
     ports:
       - "4566:4566"
     volumes:
