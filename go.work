@@ -1,7 +1,6 @@
 go 1.20
 
 use (
-	./delegator
 	./lambda/create-case
 	./scripts/uid_tester
 )

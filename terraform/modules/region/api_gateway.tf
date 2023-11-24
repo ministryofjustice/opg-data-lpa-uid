@@ -9,7 +9,7 @@ resource "aws_api_gateway_rest_api" "lpa_uid" {
   description = "API Gateway for LPA UID - ${local.environment_name}"
   body        = local.template_file
   tags = var.is_local ? {
-    _custom_id_ = "lpa-uid"
+    _custom_id_ = "lpauid"
   } : {}
 
   endpoint_configuration {
