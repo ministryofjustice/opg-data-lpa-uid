@@ -69,6 +69,18 @@ resource "aws_api_gateway_stage" "current" {
   }
 }
 
+data "aws_wafv2_web_acl" "integrations" {
+  count = var.is_local ? 0 : 1
+  name  = "integrations-${var.environment.account_name}-${data.aws_region.current.name}-web-acl"
+  scope = "REGIONAL"
+}
+
+resource "aws_wafv2_web_acl_association" "api_gateway_stage" {
+  count        = var.is_local ? 0 : 1
+  resource_arn = aws_api_gateway_stage.current.arn
+  web_acl_arn  = data.aws_wafv2_web_acl.integrations[0].arn
+}
+
 resource "aws_cloudwatch_log_group" "lpa_uid" {
   name              = "API-Gateway-Execution-Logs-${aws_api_gateway_rest_api.lpa_uid.name}-${local.stage_name}"
   kms_key_id        = aws_kms_key.cloudwatch_standard.arn
