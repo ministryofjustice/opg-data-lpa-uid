@@ -198,8 +198,9 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_high_request_rate" {
   alarm_description         = "An abnormally high rate of requests detected in the ${local.environment_name} UID service."
   alarm_name                = "${local.environment_name}-uid-service-high-request-rate"
   comparison_operator       = "GreaterThanUpperThreshold"
-  datapoints_to_alarm       = 65
+  datapoints_to_alarm       = 5
   evaluation_periods        = 5
+  threshold                 = 15
   insufficient_data_actions = []
   ok_actions                = [data.aws_sns_topic.cloudwatch_api.arn]
   treat_missing_data        = "notBreaching"
