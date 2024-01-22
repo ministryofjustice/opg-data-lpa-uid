@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: "0"
       - name: Image cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Image cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
@@ -121,7 +121,7 @@ jobs:
           registries: 311462405659
 
       - name: Image cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
