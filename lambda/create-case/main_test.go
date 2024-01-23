@@ -133,7 +133,7 @@ func TestHandleEventErrorIfFieldsAreInvalid(t *testing.T) {
 	})
 	assert.Contains(t, problem.Errors, Error{
 		Source: "/type",
-		Detail: "must be hw or pfa",
+		Detail: "must be hw, pfa, pw or pa",
 	})
 	assert.Contains(t, problem.Errors, Error{
 		Source: "/donor/dob",
@@ -165,7 +165,7 @@ func TestHandleEventSuccess(t *testing.T) {
 			return reUid.MatchString(*item["uid"].S) &&
 				validateChecksum((*item["uid"].S)[2:]) &&
 				*item["source"].S == "PHONE" &&
-				*item["type"].S == "hw" &&
+				*item["type"].S == "pw" &&
 				*item["donor"].M["name"].S == "some name" &&
 				*item["donor"].M["dob"].S == "1976-06-27" &&
 				*item["donor"].M["postcode"].S == "B7A 8FJ"
@@ -173,7 +173,7 @@ func TestHandleEventSuccess(t *testing.T) {
 		Return(nil)
 
 	resp, err := l.HandleEvent(generateProxyRequest(Request{
-		Type:   "hw",
+		Type:   "pw",
 		Source: "PHONE",
 		Donor: Donor{
 			Name:        "some name",
@@ -210,7 +210,7 @@ func TestHandleEventSaveError(t *testing.T) {
 	mDdb.On("PutItem", "my-table", mock.Anything).Return(err)
 
 	resp, err := l.HandleEvent(generateProxyRequest(Request{
-		Type:   "hw",
+		Type:   "pw",
 		Source: "PHONE",
 		Donor: Donor{
 			Name:        "some name",
@@ -259,7 +259,7 @@ func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
 			return reUid.MatchString(*item["uid"].S) &&
 				validateChecksum((*item["uid"].S)[2:]) &&
 				*item["source"].S == "PHONE" &&
-				*item["type"].S == "hw" &&
+				*item["type"].S == "pw" &&
 				*item["donor"].M["name"].S == "some name" &&
 				*item["donor"].M["dob"].S == "1976-06-27" &&
 				*item["donor"].M["postcode"].S == "B7A 8FJ"
@@ -267,7 +267,7 @@ func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
 		Return(nil)
 
 	resp, err := l.HandleEvent(generateProxyRequest(Request{
-		Type:   "hw",
+		Type:   "pw",
 		Source: "PHONE",
 		Donor: Donor{
 			Name:        "some name",
