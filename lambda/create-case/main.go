@@ -21,6 +21,8 @@ type LpaType string
 const (
 	LpaTypeHealthAndWelfare   LpaType = "hw"
 	LpaTypePersonalAndFinance LpaType = "pfa"
+	LpaTypePersonalWelfare    LpaType = "personal-welfare"
+	LpaTypePropertyAndAffairs LpaType = "property-and-affairs"
 )
 
 type LpaSource string
