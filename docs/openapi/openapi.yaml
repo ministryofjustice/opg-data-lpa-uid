@@ -34,8 +34,8 @@ paths:
                   enum:
                     - "hw"
                     - "pfa"
-                    - "pa"
-                    - "pw"
+                    - "property-and-affairs"
+                    - "personal-welfare"
                 source:
                   type: string
                   enum:
