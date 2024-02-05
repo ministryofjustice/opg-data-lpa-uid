@@ -3,8 +3,8 @@ module github.com/ministryofjustice/opg-data-lpa-uid/lambda/create-case
 go 1.20
 
 require (
-	github.com/aws/aws-lambda-go v1.45.0
-	github.com/aws/aws-sdk-go v1.50.5
+	github.com/aws/aws-lambda-go v1.46.0
+	github.com/aws/aws-sdk-go v1.50.9
 	github.com/ministryofjustice/opg-go-common v0.0.0-20231128145056-24628fba649c
 	github.com/stretchr/testify v1.8.4
 )
