@@ -102,7 +102,7 @@ resource "aws_cloudwatch_log_metric_filter" "missing_type_errors" {
 
 resource "aws_cloudwatch_log_metric_filter" "invalid_type_errors" {
   name           = "${local.environment_name}-invalid-type-errors"
-  pattern        = "{$.problem.error_string = \"*/type must be hw or pfa*\"}"
+  pattern        = "{$.problem.error_string = \"*/type must be personal-welfare or property-and-affairs*\"}"
   log_group_name = aws_cloudwatch_log_group.lpa_uid.name
 
   metric_transformation {

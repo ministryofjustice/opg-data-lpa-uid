@@ -133,7 +133,7 @@ func TestHandleEventErrorIfFieldsAreInvalid(t *testing.T) {
 	})
 	assert.Contains(t, problem.Errors, Error{
 		Source: "/type",
-		Detail: "must be hw, pfa, personal-welfare or property-and-affairs",
+		Detail: "must be personal-welfare or property-and-affairs",
 	})
 	assert.Contains(t, problem.Errors, Error{
 		Source: "/donor/dob",

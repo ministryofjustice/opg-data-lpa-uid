@@ -26,7 +26,7 @@ type RequestSigner struct {
 
 func main() {
 	baseUrl := flag.String("baseUrl", "https://development.lpa-uid.api.opg.service.justice.gov.uk", "Base URL of UID service (defaults to 'https://development.lpa-uid.api.opg.service.justice.gov.uk'")
-	requestBody := flag.String("body", `{"type":"pfa","source":"APPLICANT","donor":{"name":"Jamie Smith","dob":"2000-01-02","postcode":"B14 7ED"}}`, "Body POSTed to the service (defaults to a valid body)")
+	requestBody := flag.String("body", `{"type":"property-and-affairs","source":"APPLICANT","donor":{"name":"Jamie Smith","dob":"2000-01-02","postcode":"B14 7ED"}}`, "Body POSTed to the service (defaults to a valid body)")
 
 	flag.Parse()
 

@@ -29,10 +29,10 @@ func validate(data Request) (bool, []Error) {
 			Source: "/type",
 			Detail: "required",
 		})
-	} else if data.Type != LpaTypeHealthAndWelfare && data.Type != LpaTypePersonalAndFinance && data.Type != LpaTypePersonalWelfare && data.Type != LpaTypePropertyAndAffairs {
+	} else if data.Type != LpaTypePersonalWelfare && data.Type != LpaTypePropertyAndAffairs {
 		validationErrors = append(validationErrors, Error{
 			Source: "/type",
-			Detail: fmt.Sprintf("must be %s, %s, %s or %s", LpaTypeHealthAndWelfare, LpaTypePersonalAndFinance, LpaTypePersonalWelfare, LpaTypePropertyAndAffairs),
+			Detail: fmt.Sprintf("must be %s or %s", LpaTypePersonalWelfare, LpaTypePropertyAndAffairs),
 		})
 	}
 
