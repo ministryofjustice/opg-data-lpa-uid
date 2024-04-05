@@ -95,6 +95,8 @@ github.com/ministryofjustice/opg-go-common v0.0.0-20240223111039-066f4e682b9b h1
 github.com/ministryofjustice/opg-go-common v0.0.0-20240223111039-066f4e682b9b/go.mod h1:3nG7SSyJij0KoZFR3axgfM7bkeyj8XrYR/PQ3e4nuK8=
 github.com/ministryofjustice/opg-go-common v0.0.0-20240227144553-d506200e53d5 h1:o3Cyak8pXiOQTLdniFSiyCbhNiQ5To/+cLHyVKKBd/o=
 github.com/ministryofjustice/opg-go-common v0.0.0-20240227144553-d506200e53d5/go.mod h1:zwxromuoYZxDwvvBy6NDhdyw3AZnAeq3dXZ647fNVf4=
+github.com/ministryofjustice/opg-go-common v0.0.0-20240327113448-b9fa41e2a2f9 h1:ASb8EpOUFBvUoKgd0z3X1asi9ewieTrlN0hB0G8p6uw=
+github.com/ministryofjustice/opg-go-common v0.0.0-20240327113448-b9fa41e2a2f9/go.mod h1:GwdjLkhiHZVmXy2e821+qbyecZpbG8aEuoptZIVq3SA=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
