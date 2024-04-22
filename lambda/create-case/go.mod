@@ -7,7 +7,7 @@ toolchain go1.22.0
 require (
 	github.com/aws/aws-lambda-go v1.46.0
 	github.com/aws/aws-sdk-go v1.51.12
-	github.com/ministryofjustice/opg-go-common v0.0.0-20240327113448-b9fa41e2a2f9
+	github.com/ministryofjustice/opg-go-common v0.0.0-20240422101718-0e820ea906d2
 	github.com/stretchr/testify v1.9.0
 )
 
