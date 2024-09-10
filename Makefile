@@ -1,10 +1,10 @@
 SHELL = '/bin/bash'
 
 build:
-	docker-compose build --parallel lambda-create-case
+	docker compose build --parallel lambda-create-case
 
 up:
-	docker-compose up -d localstack
+	docker compose up -d localstack
 
 	cd terraform/local && terraform init
 	cd terraform/local && terraform apply -auto-approve
@@ -29,7 +29,7 @@ test:
 	go test -count 1 ./lambda/create-case/...
 
 down:
-	docker-compose down
+	docker compose down
 	rm -rf terraform/local/terraform.tfstate.d
 	rm -f terraform/local/terraform.state
 	rm -f terraform/local/terraform.state.backup
@@ -44,9 +44,9 @@ run-structurizr-export:
 	export -workspace /usr/local/structurizr/workspace.dsl -format mermaid
 
 get-item:
-	docker-compose exec localstack \
+	docker compose exec localstack \
 		awslocal dynamodb get-item --table-name lpa-uid-local --key '{"uid":{"S":"$(UID)"}}' --region eu-west-1
 
 scan:
-	docker-compose exec localstack \
+	docker compose exec localstack \
 		awslocal dynamodb scan --table-name lpa-uid-local --region eu-west-1
