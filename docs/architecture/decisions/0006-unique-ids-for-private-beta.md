@@ -29,7 +29,7 @@ Reducing the information space around the 12 digit reference number to only the 
 
 To reduce transposition errors we can add a check-digit to the number. The Damm algorithm should allow us to pick up common transposition errors at entry point. However this reduces the information space to 99,999,999,999 by removing one character to act as a check digit. Damm detects more errors than the Luhn value used by the older LPA numbers as a check digit.
 
-Without an M- prefix we would need a common numeric identifier for modernised LPAs, which would further reduce the available information space to 9,999,999,999 available options. This could potentialy be exhausted in worst case scenarios so we reocmmend not to do this.
+Without an M- prefix we would need a common numeric identifier for modernised LPAs, which would further reduce the available information space to 9,999,999,999 available options. This could potentially be exhausted in worst case scenarios so we recommend not to do this.
 
 ## Decision
 
