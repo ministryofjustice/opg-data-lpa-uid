@@ -49,7 +49,7 @@ We have estimated scenarios for potential ID usage over a 10 year period at curr
 
 - We will generate references non-sequentially, so that it is easier to detect enumeration attacks on any service that uses the ref number as an ID. i.e. 0001 is not followeed by 0002 and our approach should inject sufficient padding to make iteration attacks easily detectable.
 
-- LPA reference numbers that are purely numeric are more guessable with enough tries or given sufficinet requests. They should not be used as publically facing identifiers in web based services without some 2nd factor (for example the paper verification codes) and any services using them as url identifiers or form parameters should put in place detection for brute forcing and iteration based attacks.
+- LPA reference numbers that are purely numeric are more guessable with enough tries or given sufficient requests. They should not be used as publicly facing identifiers in web based services without some 2nd factor (for example the paper verification codes) and any services using them as url identifiers or form parameters should put in place detection for brute forcing and iteration based attacks.
 
 - They should not be used in URLs on external-facing systems.
 
