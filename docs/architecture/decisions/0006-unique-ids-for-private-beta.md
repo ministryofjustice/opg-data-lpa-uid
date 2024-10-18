@@ -59,7 +59,7 @@ We have estimated scenarios for potential ID usage over a 10 year period at curr
 
 - If ID space looks like it is close to exhausted, OPG has the option to implement a successor prefix i.e. M-0000-0000-0001 to L-0000-0000-0001.
 
-- The prefix is part of the LPA reference number and should asked for and stored in all interactions cases. The reference number should not be stored in a database without the prefix, so should be stored as a string. Formatting, such as dashes or spaces to improve readability are not part of the data, so are not stored.
+- The prefix is part of the LPA reference number and should asked for and stored in all interactions cases. The reference number should not be stored in a database without the prefix, so should be stored as a string. Dashes are considered part of the string for the performance benefit not constantly re-formatting provides. An LPA reference number is therefore: "M-0000-0000-1234" not "000000001234"
 
 - If a future change to the reference number format is made, then a new prefix should be used to allow systems to determine strategies to interpret it. For example if we change the format to allow letters and remove Damm checkdigits, then a new L- prefix might be used. Prefixes used by other codes in the OPG such as view codes and activitation keys are considered reserved to avoid confusion.
 
