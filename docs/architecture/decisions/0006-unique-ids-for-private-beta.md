@@ -57,7 +57,7 @@ We have estimated scenarios for potential ID usage over a 10 year period at curr
 
 - The reduced information space will mean we may have to use a different technology in the UID generator due to likelihood of collisions from random generation, potentially a traditional RDS with a sequence generator. This will create rework for teams.
 
-- If ID space looks like it is close to exhausted, OPG has the option to implement a successor prefix i.e. M-0000 0000 0001 to L-0000 0000 0001.
+- If ID space looks like it is close to exhausted, OPG has the option to implement a successor prefix i.e. M-0000-0000-0001 to L-0000-0000-0001.
 
 - The prefix is part of the LPA reference number and should asked for and stored in all interactions cases. The reference number should not be stored in a database without the prefix, so should be stored as a string. Formatting, such as dashes or spaces to improve readability are not part of the data, so are not stored.
 
