@@ -61,7 +61,7 @@ We have estimated scenarios for potential ID usage over a 10 year period at curr
 
 - The prefix is part of the LPA reference number and should asked for and stored in all interactions cases. The reference number should not be stored in a database without the prefix, so should be stored as a string. Formatting, such as dashes or spaces to improve readability are not part of the data, so are not stored.
 
-- If a future change to the reference number format is made, then a new prefix should be used to allow systems to determine strategies to interpret it. For example if we change the format to allow letters and remove Damm checkdigits, then a new L- prefix might be used.
+- If a future change to the reference number format is made, then a new prefix should be used to allow systems to determine strategies to interpret it. For example if we change the format to allow letters and remove Damm checkdigits, then a new L- prefix might be used. Prefixes used by other codes in the OPG such as view codes and activitation keys are considered reserved to avoid confusion.
 
 - Modernised LPA reference numbers should be used only for LPAs applications, not sub-actors such as attorneys or non-lpa cases like supervision orders to reduce usage. LPA ids will not be reclaimed if an LPA is cancelled or the donor dies.
 
