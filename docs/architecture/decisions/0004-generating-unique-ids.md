@@ -1,12 +1,12 @@
-# 1. Record architecture decisions
+# 4. Generating unique IDs
 
 Date: 2023-03-16
 
-Edited: 2023-05-05
+Edited: 2024-10-10
 
 ## Status
 
-Accepted
+Superceded
 
 ## Context
 
@@ -17,12 +17,14 @@ We must define the format and method of generating this unique identification. T
 Human-readable reference numbers are a better description rather than an IDs, as users may need to read them aloud over the phone or manually enter their reference number on the Use an LPA service. Therefore I will refer to them as reference numbers within this document. However they are not to be confused with the current LPA reference numbers in the format of 7000-0000-0000
 
 The reference numbers generated must:
+
 - Only use alphanumeric characters for readability purposes
 - Be unique to allow us to identify 1 LPA per reference number
 - Have a clear prefix to differentiate them from existing IDs. The Use an LPA service provides users with activation keys prefixed with a C- and allows users to create organisations codes to view their LPA prefixed with a V-. So this M- prefix is not only necessary to allow us to differentiate them from current LPAs, but also allow the user to differentiate their reference number(s) from Use an LPA activation keys/codes.
 
 
 For private beta (but not necessarily now) they also must:
+
 - Not be calculable (e.g. not a sequence) to avoid iteration based attacks.
 - Use the safe alphabet identified by Use an LPA `346789QWERTYUPADFGHJKLXCVBNM`. This is to avoid typographically similar letters such as i, l , and 1, making them more readable/usable for end users and avoid confusion.
 
