@@ -41,24 +41,28 @@ Thus a valid LPA number would be M-0000-0000-0013 where the 3 is a checkdigit ge
 
 Typical tranposing issues such as digit order twiddling. i.e. 0000-0000-1234 is a correct checkdigit of 4, but 0000-0000-2134 would be invalid detecting the 12 to 21 swap.
 
-We have estimated scenarios for potential ID usage over a 10 year period at current and aggressive growth. (see [internal spreadsheet](https://docs.google.com/spreadsheets/d/1kH1BOk8iOTUg3aEphD5J18LV4zhr4mQn/edit?usp=sharing&ouid=104236485660673640558&rtpof=true&sd=true)).
+We have estimated scenarios for potential ID usage over a 10 year period at current and aggressive growth. (see [spreadsheet attached to issue MLPA-2450](https://opgtransform.atlassian.net/browse/MLPAB-2450)).
 
 ## Consequences
 
 - Reducing the information space around the reference number to only the 0-9 characters with a check digit means we have a maximum of 99,999,999,999 numbers available.
 
-- We will generate references non-sequentially, so that it is easier to detect enumeration attacks on any service that uses the ref number as an ID. i.e. 0001 is not followeed by 0002 and our approach should inject sufficient padding to make iteration attacks easily detectable.
+- We will generate references non-sequentially, so that it is easier to detect enumeration attacks on any service that uses the ref number as an ID. i.e. 0001 is not followeed by 0002 and our approach should inject sufficient padding to make iteration attacks easily detectable and avoid predictable step jumps.
 
 - LPA reference numbers that are purely numeric are more guessable with enough tries or given sufficient requests. They should not be used as publicly facing identifiers in web based services without some 2nd factor (for example the paper verification codes) and any services using them as url identifiers or form parameters should put in place detection for brute forcing and iteration based attacks.
 
-- They should not be used in URLs on external-facing systems.
+- They should not be used in URLs on external-facing systems. In external facing services or APIs that need to make direct reference to an LPA the UUID associated with an LPA should be used instead.
 
-- During private beta it is essential we track LPA ref number usage and adjust our approach accordingly. Particularly if more drafts are created than expected as this could use up the available set of IDs at a greater rate. A checkpoint at the end of private beta to assess this should be put in place.
+- During private beta it is essential we track LPA reference number usage and adjust our approach accordingly. Particularly if more drafts are created than expected as this could use up the available set of IDs at a greater rate. A checkpoint at the end of private beta to assess this should be put in place.
 
 - The reduced information space will mean we may have to use a different technology in the UID generator due to likelihood of collisions from random generation, potentially a traditional RDS with a sequence generator. This will create rework for teams.
 
-- If ID space looks like it is close to exhausted, OPG has the option to implement a successor prefix i.e. M-0000 0000 0001 to L-0000 0000 0001. This means the prefix is part of the number and should asked for and stored in all interactions.
+- If ID space looks like it is close to exhausted, OPG has the option to implement a successor prefix i.e. M-0000 0000 0001 to L-0000 0000 0001.
 
-- Modernised LPA reference numbers should be used only for LPAs applications, not sub actors such as attorneys or non-lpa cases like supervision orders to reduce usage.
+- The prefix is part of the LPA reference number and should asked for and stored in all interactions cases. The reference number should not be stored in a database without the prefix, so should be stored as a string. Formatting, such as dashes or spaces to improve readability are not part of the data, so are not stored.
+
+- If a future change to the reference number format is made, then a new prefix should be used to allow systems to determine strategies to interpret it. For example if we change the format to allow letters and remove Damm checkdigits, then a new L- prefix might be used.
+
+- Modernised LPA reference numbers should be used only for LPAs applications, not sub-actors such as attorneys or non-lpa cases like supervision orders to reduce usage. LPA ids will not be reclaimed if an LPA is cancelled or the donor dies.
 
 - All UIs will have to accomodate any 0 padding in requests for the data. i.e. M-0000-0000-1234 not M-1234
