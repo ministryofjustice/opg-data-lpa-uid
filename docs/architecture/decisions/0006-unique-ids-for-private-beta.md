@@ -16,7 +16,7 @@ The reference numbers generated must:
 
 - Only use alpha-numeric characters for readability purposes
 - Be unique to allow us to identify 1 LPA application per reference number
-- Have a clear prefix to differentiate them from existing IDs and other codes used in out processes.
+- Have a clear prefix to differentiate them from existing IDs and other codes used in our processes.
 - Reduce the risk on iteration attacks by making them non-sequential and less guessable (if a trheat actor knows LPA 0001 exists trying 0002 gets a result)
 
 Since that time additional business constraints :
