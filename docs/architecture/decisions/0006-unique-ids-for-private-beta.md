@@ -51,7 +51,7 @@ We have estimated scenarios for potential ID usage over a 10 year period at curr
 
 - LPA reference numbers that are purely numeric are more guessable with enough tries or given sufficient requests. They should not be used as publicly facing identifiers in web based services without some 2nd factor (for example the paper verification codes) and any services using them should put in place detection for brute forcing and iteration based attacks.
 
-- They should not be used in URLs on external-facing systems. None OPG Digital facing services or external-facing APIs (such as the 3rd party supporter API we plan) that need to make direct reference to an LPA a local UUID associated with an LPA should be used instead.
+- They should not be used in URLs on external-facing systems. For OPG Digital facing services or external-facing APIs (such as the 3rd party supporter API we plan) that need to make direct reference to an LPA, a local UUID associated with an LPA should be used instead.
 
 - During private beta it is essential we track LPA reference number usage and adjust our approach accordingly. Particularly if more drafts are created than expected as this could use up the available set of IDs at a greater rate. A checkpoint at the end of private beta to assess this should be put in place.
 
