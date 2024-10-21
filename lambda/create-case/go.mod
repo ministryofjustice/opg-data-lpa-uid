@@ -2,12 +2,12 @@ module github.com/ministryofjustice/opg-data-lpa-uid/lambda/create-case
 
 go 1.22
 
-toolchain go1.22.0
+toolchain go1.23.2
 
 require (
-	github.com/aws/aws-lambda-go v1.46.0
-	github.com/aws/aws-sdk-go v1.51.12
-	github.com/ministryofjustice/opg-go-common v1.1.0-SW-6856-add-versioning.2
+	github.com/aws/aws-lambda-go v1.47.0
+	github.com/aws/aws-sdk-go v1.55.5
+	github.com/ministryofjustice/opg-go-common v1.25.0
 	github.com/stretchr/testify v1.9.0
 )
 
