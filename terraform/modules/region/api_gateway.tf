@@ -8,9 +8,6 @@ resource "aws_api_gateway_rest_api" "lpa_uid" {
   name        = "lpa-uid-${terraform.workspace}"
   description = "API Gateway for LPA UID - ${local.environment_name}"
   body        = local.template_file
-  tags = var.is_local ? {
-    _custom_id_ = "lpauid"
-  } : {}
 
   endpoint_configuration {
     types = ["REGIONAL"]
@@ -70,13 +67,11 @@ resource "aws_api_gateway_stage" "current" {
 }
 
 data "aws_wafv2_web_acl" "integrations" {
-  count = var.is_local ? 0 : 1
   name  = "integrations-${var.environment.account_name}-${data.aws_region.current.name}-web-acl"
   scope = "REGIONAL"
 }
 
 resource "aws_wafv2_web_acl_association" "api_gateway_stage" {
-  count        = var.is_local ? 0 : 1
   resource_arn = aws_api_gateway_stage.current.arn
   web_acl_arn  = data.aws_wafv2_web_acl.integrations[0].arn
 }
@@ -88,7 +83,7 @@ resource "aws_cloudwatch_log_group" "lpa_uid" {
 }
 
 output "api_stage_uri" {
-  value = var.is_local ? "http://${aws_api_gateway_rest_api.lpa_uid.id}.execute-api.localhost.localstack.cloud:4566/${aws_api_gateway_stage.current.stage_name}/" : aws_api_gateway_stage.current.invoke_url
+  value = aws_api_gateway_stage.current.invoke_url
 }
 
 resource "aws_api_gateway_domain_name" "lpa_uid" {
