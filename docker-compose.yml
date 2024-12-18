@@ -15,8 +15,8 @@ services:
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
 
   localstack:
-    image: localstack/localstack:4.0
     build: scripts/localstack
+    container_name: lpa-uid-localstack
     depends_on: [lambda-create-case]
     ports:
       - "4566:4566"
@@ -31,7 +31,7 @@ services:
         aliases:
           - "lpauid.execute-api.localhost.localstack.cloud"
     healthcheck:
-      test: ["CMD-SHELL", "curl http://localhost:4566 || exit 1"]
+      test: ["CMD-SHELL", "curl -s localhost:4566/_localstack/init | jq .completed.READY | grep true || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 3
