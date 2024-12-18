@@ -2,7 +2,6 @@ locals {
   default_tags     = merge(local.mandatory_moj_tags, local.optional_tags)
   environment      = contains(keys(var.environments), terraform.workspace) ? var.environments[terraform.workspace] : var.environments["default"]
   environment_name = element(split("_", terraform.workspace), 0)
-  is_local         = false
   mandatory_moj_tags = {
     business-unit    = "OPG"
     application      = "opg-data-lpa-uid"
