@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "lambda" {
     ]
 
     resources = [
-      var.is_local ? "*" : var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn,
+      var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn,
     ]
   }
 }
