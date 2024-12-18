@@ -30,9 +30,6 @@ test:
 
 down:
 	docker compose down
-	rm -rf terraform/local/terraform.tfstate.d
-	rm -f terraform/local/terraform.state
-	rm -f terraform/local/terraform.state.backup
 
 run-structurizr:
 	docker pull structurizr/lite

@@ -15,7 +15,6 @@ services:
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
 
   localstack:
-    image: localstack/localstack:4.0
     build: scripts/localstack
     depends_on: [lambda-create-case]
     ports:
