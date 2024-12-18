@@ -17,9 +17,6 @@ variable "environment_name" {}
 
 variable "environment" {}
 
-variable "is_local" {
-}
-
 variable "is_primary" {
   type    = bool
   default = false
