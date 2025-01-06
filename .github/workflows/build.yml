@@ -72,6 +72,9 @@ jobs:
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.4.6
+          terraform_wrapper: false
       - name: Restore Image
         run: docker load -i /tmp/images/lambda-create-case.tar
       - run: make up test-api
