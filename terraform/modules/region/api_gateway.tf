@@ -73,7 +73,7 @@ data "aws_wafv2_web_acl" "integrations" {
 
 resource "aws_wafv2_web_acl_association" "api_gateway_stage" {
   resource_arn = aws_api_gateway_stage.current.arn
-  web_acl_arn  = data.aws_wafv2_web_acl.integrations[0].arn
+  web_acl_arn  = data.aws_wafv2_web_acl.integrations.arn
 }
 
 resource "aws_cloudwatch_log_group" "lpa_uid" {
