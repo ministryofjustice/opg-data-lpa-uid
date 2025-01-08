@@ -4,7 +4,7 @@ build:
 	docker compose build --parallel lambda-create-case
 
 up:
-	docker compose up -d localstack
+	docker compose up -d --wait localstack
 
 test-api-eu-west-1 test-api-eu-west-2:
 	curl \
