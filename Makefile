@@ -1,8 +1,5 @@
 SHELL = '/bin/bash'
 
-eu_west_1_url=$(shell cat ./scripts/localstack/init/localstack_api_urls.json | jq -r '.eu_west_1_url')
-eu_west_2_url=$(shell cat ./scripts/localstack/init/localstack_api_urls.json | jq -r '.eu_west_2_url')
-
 build:
 	docker compose build --parallel lambda-create-case
 
@@ -11,17 +8,17 @@ up:
 
 test-api-eu-west-1 test-api-eu-west-2:
 	curl \
-		-XPOST $($(REGION)_url)/cases \
+		-XPOST $(URL)/cases \
 		-H 'Content-type:application/json' \
 		-d '{"source":"APPLICANT","type":"personal-welfare","donor":{"name":"Jack Rubik","dob":"1938-03-18","postcode":"W8A0IK"}}'
 	@echo ""
 
 	curl \
-		$($(REGION)_url)/health
+		$(URL)/health
 	@echo ""
 
-test-api-eu-west-1: REGION=eu_west_1
-test-api-eu-west-2: REGION=eu_west_2
+test-api-eu-west-1: URL=http://lpauid.execute-api.localhost.localstack.cloud:4566/current
+test-api-eu-west-2: URL=http://lpauid_eu_west_2.execute-api.localhost.localstack.cloud:4566/current
 
 test-api:
 	@SUCCESS=false; \
