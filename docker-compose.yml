@@ -1,6 +1,3 @@
----
-version: "3.6"
-
 services:
   lambda-create-case:
     image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
@@ -18,18 +15,19 @@ services:
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
 
   localstack:
-    image: localstack/localstack:4.0
+    build: scripts/localstack
+    container_name: lpa-uid-localstack
     depends_on: [lambda-create-case]
     ports:
       - "4566:4566"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    networks:
-      default:
-        aliases:
-          - "lpauid.execute-api.localhost.localstack.cloud"
+      - "./scripts/localstack/init:/etc/localstack/init/ready.d"
+      - "./scripts/localstack/init:/scripts/localstack/init"
+      - "./scripts/lambda/forwarder.py:/scripts/lambda/forwarder.py"
+      - "./docs/openapi/openapi.yaml:/docs/openapi/openapi.yaml"
     healthcheck:
-      test: ["CMD-SHELL", "curl http://localhost:4566 || exit 1"]
+      test: ["CMD-SHELL", "curl -s localhost:4566/_localstack/init | jq .completed.READY | grep true || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 3
