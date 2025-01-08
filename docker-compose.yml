@@ -26,10 +26,6 @@ services:
       - "./scripts/localstack/init:/scripts/localstack/init"
       - "./scripts/lambda/forwarder.py:/scripts/lambda/forwarder.py"
       - "./docs/openapi/openapi.yaml:/docs/openapi/openapi.yaml"
-    networks:
-      default:
-        aliases:
-          - "lpauid.execute-api.localhost.localstack.cloud"
     healthcheck:
       test: ["CMD-SHELL", "curl -s localhost:4566/_localstack/init | jq .completed.READY | grep true || exit 1"]
       interval: 15s
