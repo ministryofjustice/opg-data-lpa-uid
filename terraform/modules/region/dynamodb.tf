@@ -18,7 +18,7 @@ resource "aws_dynamodb_table" "lpa_uid" {
   }
 
   point_in_time_recovery {
-    enabled = !var.is_local
+    enabled = true
   }
 
   server_side_encryption {
@@ -44,7 +44,7 @@ resource "aws_kms_key" "dynamodb" {
   description             = "LPA UID Generation Service ${var.environment_name} DynamoDB"
   deletion_window_in_days = 10
   enable_key_rotation     = true
-  multi_region            = var.is_local ? false : true
+  multi_region            = true
   policy                  = data.aws_iam_policy_document.dynamodb_kms.json
 }
 
