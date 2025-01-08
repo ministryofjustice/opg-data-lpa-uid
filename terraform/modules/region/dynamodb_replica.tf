@@ -1,12 +1,12 @@
 resource "aws_dynamodb_table_replica" "lpa_uid" {
   count                  = var.is_primary ? 0 : 1
   global_table_arn       = var.dynamodb_global_table_arn
-  kms_key_arn            = var.is_local ? null : aws_kms_replica_key.dynamodb[0].arn
-  point_in_time_recovery = var.is_local ? false : true
+  kms_key_arn            = aws_kms_replica_key.dynamodb[0].arn
+  point_in_time_recovery = true
 }
 
 resource "aws_kms_replica_key" "dynamodb" {
-  count                   = var.is_local || var.is_primary ? 0 : 1
+  count                   = var.is_primary ? 0 : 1
   description             = "LPA UID Generation Service ${var.environment_name} DynamoDB eu-west-2 replica key"
   deletion_window_in_days = 10
   policy                  = data.aws_iam_policy_document.dynamodb_kms_replica.json
@@ -17,7 +17,7 @@ resource "aws_kms_replica_key" "dynamodb" {
 }
 
 resource "aws_kms_alias" "dynamodb_alias" {
-  count         = var.is_local || var.is_primary ? 0 : 1
+  count         = var.is_primary ? 0 : 1
   name          = "alias/lpa-uid-dynamodb-${var.environment_name}"
   target_key_id = aws_kms_replica_key.dynamodb[0].key_id
 }
