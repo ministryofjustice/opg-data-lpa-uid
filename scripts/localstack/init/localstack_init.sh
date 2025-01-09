@@ -67,3 +67,6 @@ create_regional_services() {
 
 create_regional_services eu-west-1 lpauid
 create_regional_services eu-west-2 lpauid_eu_west_2
+
+awslocal lambda wait function-active-v2 --function-name lambda-create-case --region eu-west-1
+awslocal lambda wait function-active-v2 --function-name lambda-create-case --region eu-west-2
