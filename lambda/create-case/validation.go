@@ -6,11 +6,13 @@ import (
 	"strings"
 )
 
-var rePostcode = regexp.MustCompile(`^[A-Z0-9]{5,7}$`)
-var reDateOfBirth = regexp.MustCompile(`^[0-9]{4}-[0-9]{2}-[0-9]{2}$`)
+var (
+	rePostcode    = regexp.MustCompile(`^[A-Z0-9]{5,7}$`)
+	reDateOfBirth = regexp.MustCompile(`^[0-9]{4}-[0-9]{2}-[0-9]{2}$`)
+)
 
-func validate(data Request) (bool, []Error) {
-	validationErrors := []Error{}
+func validate(data Request) []Error {
+	var validationErrors []Error
 
 	if data.Source == "" {
 		validationErrors = append(validationErrors, Error{
@@ -68,5 +70,5 @@ func validate(data Request) (bool, []Error) {
 		})
 	}
 
-	return len(validationErrors) > 0, validationErrors
+	return validationErrors
 }
