@@ -1,293 +1,286 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"regexp"
+	"net/http"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-type mockDynamoDB struct {
-	*dynamodb.DynamoDB
-	mock.Mock
-}
+var (
+	testNow   = time.Now()
+	testNowFn = func() time.Time { return testNow }
+)
 
-func (m *mockDynamoDB) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
-	args := m.Called(*input.TableName, input.Key)
+func TestHandleEvent(t *testing.T) {
+	dynamo := newMockDynamo(t)
+	dynamo.EXPECT().
+		GetItem(mock.Anything, mock.Anything).
+		Return(&dynamodb.GetItemOutput{Item: map[string]types.AttributeValue{
+			"Maximum": &types.AttributeValueMemberN{Value: "6"},
+		}}, nil)
+	dynamo.EXPECT().
+		TransactWriteItems(mock.Anything, &dynamodb.TransactWriteItemsInput{
+			TransactItems: []types.TransactWriteItem{
+				{
+					Update: &types.Update{
+						TableName: aws.String("T"),
+						Key: map[string]types.AttributeValue{
+							"uid": &types.AttributeValueMemberS{Value: "#METADATA"},
+						},
+						ConditionExpression: aws.String("Maximum = :currentMaximum"),
+						UpdateExpression:    aws.String("SET Maximum = :nextMaximum"),
+						ExpressionAttributeValues: map[string]types.AttributeValue{
+							":currentMaximum": &types.AttributeValueMemberN{Value: "6"},
+							":nextMaximum":    &types.AttributeValueMemberN{Value: "7"},
+						},
+					},
+				},
+				{
+					Put: &types.Put{
+						TableName: aws.String("T"),
+						Item: map[string]types.AttributeValue{
+							"uid":        &types.AttributeValueMemberS{Value: "M-0000-0000-3829"},
+							"created_at": &types.AttributeValueMemberS{Value: testNow.Format(time.RFC3339Nano)},
+							"type":       &types.AttributeValueMemberS{Value: "personal-welfare"},
+							"source":     &types.AttributeValueMemberS{Value: "PHONE"},
+							"donor": &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
+								"name":     &types.AttributeValueMemberS{Value: "some name"},
+								"dob":      &types.AttributeValueMemberS{Value: "1976-06-27"},
+								"postcode": &types.AttributeValueMemberS{Value: "B7A 8FJ"},
+							}},
+						},
+						ConditionExpression: aws.String("attribute_not_exists(uid)"),
+					},
+				},
+			},
+		}).
+		Return(nil, nil)
 
-	if args.Get(0) != nil {
-		return args.Get(0).(*dynamodb.GetItemOutput), args.Error(1)
-	}
-	return &dynamodb.GetItemOutput{}, args.Error(1)
-}
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-func (m *mockDynamoDB) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
-	args := m.Called(*input.TableName, input.Item)
-
-	return &dynamodb.PutItemOutput{}, args.Error(0)
-}
-
-type mockLogger struct {
-	mock.Mock
-}
-
-func (m *mockLogger) Print(content ...interface{}) {
-	m.Called(content)
-}
-
-func generateProxyRequest(request Request) events.APIGatewayProxyRequest {
-	encoded, _ := json.Marshal(request)
-
-	return events.APIGatewayProxyRequest{
-		Body: string(encoded),
-	}
-}
-
-func TestHandleEventErrorIfBadBody(t *testing.T) {
-	logger := &mockLogger{}
-	logger.On("Print", mock.Anything)
-
-	l := Lambda{
-		logger: logger,
-	}
+	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
-		Body: "bad body",
+		Body: `{
+			"type": "personal-welfare",
+			"source": "PHONE",
+			"donor": {
+				"name": "some name",
+				"dob": "1976-06-27",
+				"postcode": "B7A 8FJ"
+			}
+		}`,
 	})
 
-	assert.Equal(t, 400, resp.StatusCode)
 	assert.Nil(t, err)
-
-	var problem Problem
-	_ = json.Unmarshal([]byte(resp.Body), &problem)
-
-	assert.Equal(t, "INVALID_REQUEST", problem.Code)
-	assert.Equal(t, "Invalid request", problem.Detail)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	assert.JSONEq(t, `{"uid": "M-0000-0000-3829"}`, resp.Body)
 }
 
-func TestHandleEventErrorIfMissingRequiredFields(t *testing.T) {
-	l := Lambda{}
+func TestHandleEventWhenInitialUID(t *testing.T) {
+	dynamo := newMockDynamo(t)
+	dynamo.EXPECT().
+		GetItem(mock.Anything, mock.Anything).
+		Return(&dynamodb.GetItemOutput{}, nil)
+	dynamo.EXPECT().
+		TransactWriteItems(mock.Anything, &dynamodb.TransactWriteItemsInput{
+			TransactItems: []types.TransactWriteItem{
+				{
+					Put: &types.Put{
+						TableName: aws.String("T"),
+						Item: map[string]types.AttributeValue{
+							"uid":     &types.AttributeValueMemberS{Value: "#METADATA"},
+							"Maximum": &types.AttributeValueMemberN{Value: "1"},
+						},
+						ConditionExpression: aws.String("attribute_not_exists(uid)"),
+					},
+				},
+				{
+					Put: &types.Put{
+						TableName: aws.String("T"),
+						Item: map[string]types.AttributeValue{
+							"uid":        &types.AttributeValueMemberS{Value: "M-0000-0000-0646"},
+							"created_at": &types.AttributeValueMemberS{Value: testNow.Format(time.RFC3339Nano)},
+							"type":       &types.AttributeValueMemberS{Value: "personal-welfare"},
+							"source":     &types.AttributeValueMemberS{Value: "PHONE"},
+							"donor": &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
+								"name":     &types.AttributeValueMemberS{Value: "some name"},
+								"dob":      &types.AttributeValueMemberS{Value: "1976-06-27"},
+								"postcode": &types.AttributeValueMemberS{Value: "B7A 8FJ"},
+							}},
+						},
+						ConditionExpression: aws.String("attribute_not_exists(uid)"),
+					},
+				},
+			},
+		}).
+		Return(nil, nil)
+
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
+
+	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+
+	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
+		Body: `{
+			"type": "personal-welfare",
+			"source": "PHONE",
+			"donor": {
+				"name": "some name",
+				"dob": "1976-06-27",
+				"postcode": "B7A 8FJ"
+			}
+		}`,
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	assert.JSONEq(t, `{"uid": "M-0000-0000-0646"}`, resp.Body)
+}
+
+func TestHandleEventWhenMetadataConflict(t *testing.T) {
+	dynamo := newMockDynamo(t)
+	dynamo.EXPECT().
+		GetItem(mock.Anything, mock.Anything).
+		Return(&dynamodb.GetItemOutput{Item: map[string]types.AttributeValue{
+			"Maximum": &types.AttributeValueMemberN{Value: "6"},
+		}}, nil).
+		Once()
+	dynamo.EXPECT().
+		TransactWriteItems(mock.Anything, mock.MatchedBy(func(input *dynamodb.TransactWriteItemsInput) bool {
+			var currentMaximum int
+			attributevalue.Unmarshal(input.TransactItems[0].Update.ExpressionAttributeValues[":currentMaximum"], &currentMaximum)
+			return currentMaximum == 6
+		})).
+		Return(nil, &types.TransactionCanceledException{
+			CancellationReasons: []types.CancellationReason{
+				{Code: aws.String("ConditionalCheckFailed")},
+				{Code: aws.String("ConditionalCheckFailed")},
+			},
+		}).
+		Once()
+	dynamo.EXPECT().
+		GetItem(mock.Anything, mock.Anything).
+		Return(&dynamodb.GetItemOutput{Item: map[string]types.AttributeValue{
+			"Maximum": &types.AttributeValueMemberN{Value: "7"},
+		}}, nil).
+		Once()
+	dynamo.EXPECT().
+		TransactWriteItems(mock.Anything, mock.MatchedBy(func(input *dynamodb.TransactWriteItemsInput) bool {
+			var currentMaximum int
+			attributevalue.Unmarshal(input.TransactItems[0].Update.ExpressionAttributeValues[":currentMaximum"], &currentMaximum)
+			return currentMaximum == 7
+		})).
+		Return(nil, nil).
+		Once()
+
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
+
+	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+
+	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
+		Body: `{
+			"type": "personal-welfare",
+			"source": "PHONE",
+			"donor": {
+				"name": "some name",
+				"dob": "1976-06-27",
+				"postcode": "B7A 8FJ"
+			}
+		}`,
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	assert.JSONEq(t, `{"uid": "M-0000-0000-4354"}`, resp.Body)
+}
+
+func TestHandleEventWhenEmptyBody(t *testing.T) {
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
+	logger.EXPECT().
+		ErrorContext(mock.Anything, mock.Anything, mock.Anything)
+
+	l := &Lambda{logger: logger}
+
+	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
+		Body: "",
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	assert.JSONEq(t, `{"code":"INVALID_REQUEST","detail":"Invalid request"}`, resp.Body)
+}
+
+func TestHandleEventWhenInvalidBodyMissingRequiredFields(t *testing.T) {
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
+
+	l := &Lambda{logger: logger}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: "{}",
 	})
 
-	assert.Equal(t, 400, resp.StatusCode)
 	assert.Nil(t, err)
-
-	var problem Problem
-	_ = json.Unmarshal([]byte(resp.Body), &problem)
-
-	assert.Equal(t, "INVALID_REQUEST", problem.Code)
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/source",
-		Detail: "required",
-	})
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/type",
-		Detail: "required",
-	})
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/donor/name",
-		Detail: "required",
-	})
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/donor/dob",
-		Detail: "required",
-	})
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/donor/postcode",
-		Detail: "required",
-	})
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	assert.JSONEq(t, `{
+		"code":"INVALID_REQUEST",
+		"detail":"Invalid request",
+		"errors": [
+			{"source":"/source","detail":"required"},
+			{"source":"/type","detail":"required"},
+			{"source":"/donor/name","detail":"required"},
+			{"source":"/donor/dob","detail":"required"},
+			{"source":"/donor/postcode","detail":"required"}
+		]
+	}`, resp.Body)
 }
 
-func TestHandleEventErrorIfFieldsAreInvalid(t *testing.T) {
-	l := Lambda{}
+func TestHandleEventWhenInvalidBodyHasInvalidFields(t *testing.T) {
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-	resp, err := l.HandleEvent(generateProxyRequest(Request{
-		Type:   "bad",
-		Source: "bad",
-		Donor: Donor{
-			Name:        "some name",
-			DateOfBirth: "27/06/1976",
-			Postcode:    "bad",
-		},
-	}))
+	l := &Lambda{logger: logger}
 
-	assert.Equal(t, 400, resp.StatusCode)
-	assert.Nil(t, err)
-
-	var problem Problem
-	_ = json.Unmarshal([]byte(resp.Body), &problem)
-
-	assert.Equal(t, "INVALID_REQUEST", problem.Code)
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/source",
-		Detail: "must be APPLICANT or PHONE",
+	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
+		Body: `{
+			"type": "bad",
+			"source": "bad",
+			"donor": {
+				"name": "some name",
+				"dob": "27/06/1976",
+				"postcode": "bad"
+			}
+		}`,
 	})
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/type",
-		Detail: "must be personal-welfare or property-and-affairs",
-	})
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/donor/dob",
-		Detail: "must match format YYYY-MM-DD",
-	})
-	assert.Contains(t, problem.Errors, Error{
-		Source: "/donor/postcode",
-		Detail: "must be a valid postcode",
-	})
-}
 
-func TestHandleEventSuccess(t *testing.T) {
-	mDdb := new(mockDynamoDB)
-	l := Lambda{
-		ddb:       mDdb,
-		tableName: "my-table",
-	}
-
-	var reUid = regexp.MustCompile(`^M-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
-
-	mDdb.
-		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
-			return reUid.MatchString(*key["uid"].S)
-		})).
-		Return(&dynamodb.GetItemOutput{}, nil)
-
-	mDdb.
-		On("PutItem", "my-table", mock.MatchedBy(func(item map[string]*dynamodb.AttributeValue) bool {
-			return reUid.MatchString(*item["uid"].S) &&
-				validateChecksum((*item["uid"].S)[2:]) &&
-				*item["source"].S == "PHONE" &&
-				*item["type"].S == "personal-welfare" &&
-				*item["donor"].M["name"].S == "some name" &&
-				*item["donor"].M["dob"].S == "1976-06-27" &&
-				*item["donor"].M["postcode"].S == "B7A 8FJ"
-		})).
-		Return(nil)
-
-	resp, err := l.HandleEvent(generateProxyRequest(Request{
-		Type:   "personal-welfare",
-		Source: "PHONE",
-		Donor: Donor{
-			Name:        "some name",
-			DateOfBirth: "1976-06-27",
-			Postcode:    "B7A 8FJ",
-		},
-	}))
-
-	assert.Equal(t, 201, resp.StatusCode)
 	assert.Nil(t, err)
-
-	var response Response
-	_ = json.Unmarshal([]byte(resp.Body), &response)
-
-	assert.Regexp(t, `^M(-[346789QWERTYUPADFGHJKLXCVBNM]{4}){3}$`, response.Uid)
-}
-
-func TestHandleEventSaveError(t *testing.T) {
-	err := errors.New(("an error"))
-
-	mDdb := new(mockDynamoDB)
-
-	logger := &mockLogger{}
-	logger.On("Print", mock.Anything)
-
-	l := Lambda{
-		ddb:       mDdb,
-		tableName: "my-table",
-		logger:    logger,
-	}
-
-	mDdb.On("GetItem", "my-table", mock.Anything).Return(&dynamodb.GetItemOutput{}, nil)
-
-	mDdb.On("PutItem", "my-table", mock.Anything).Return(err)
-
-	resp, err := l.HandleEvent(generateProxyRequest(Request{
-		Type:   "personal-welfare",
-		Source: "PHONE",
-		Donor: Donor{
-			Name:        "some name",
-			DateOfBirth: "1976-06-27",
-			Postcode:    "B7A 8FJ",
-		},
-	}))
-
-	assert.Equal(t, 500, resp.StatusCode)
-	assert.Nil(t, err)
-
-	var problem Problem
-	_ = json.Unmarshal([]byte(resp.Body), &problem)
-
-	assert.Equal(t, "INTERNAL_SERVER_ERROR", problem.Code)
-	assert.Equal(t, "Internal server error", problem.Detail)
-}
-
-func TestHandleUIDRegeneratedIfNotUnique(t *testing.T) {
-	mDdb := new(mockDynamoDB)
-	l := Lambda{
-		ddb:       mDdb,
-		tableName: "my-table",
-	}
-
-	var reUid = regexp.MustCompile(`^M-[346789QWERTYUPADFGHJKLXCVBNM]{12}$`)
-
-	mDdb.
-		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
-			return reUid.MatchString(*key["uid"].S)
-		})).
-		Return(&dynamodb.GetItemOutput{
-			Item: map[string]*dynamodb.AttributeValue{
-				"uid": {S: aws.String("M-7PL7MA8DF8LD")},
-			},
-		}, nil).Twice()
-
-	mDdb.
-		On("GetItem", "my-table", mock.MatchedBy(func(key map[string]*dynamodb.AttributeValue) bool {
-			return reUid.MatchString(*key["uid"].S)
-		})).
-		Return(&dynamodb.GetItemOutput{}, nil).Once()
-
-	mDdb.
-		On("PutItem", "my-table", mock.MatchedBy(func(item map[string]*dynamodb.AttributeValue) bool {
-			return reUid.MatchString(*item["uid"].S) &&
-				validateChecksum((*item["uid"].S)[2:]) &&
-				*item["source"].S == "PHONE" &&
-				*item["type"].S == "personal-welfare" &&
-				*item["donor"].M["name"].S == "some name" &&
-				*item["donor"].M["dob"].S == "1976-06-27" &&
-				*item["donor"].M["postcode"].S == "B7A 8FJ"
-		})).
-		Return(nil)
-
-	resp, err := l.HandleEvent(generateProxyRequest(Request{
-		Type:   "personal-welfare",
-		Source: "PHONE",
-		Donor: Donor{
-			Name:        "some name",
-			DateOfBirth: "1976-06-27",
-			Postcode:    "B7A 8FJ",
-		},
-	}))
-
-	mDdb.AssertNumberOfCalls(t, "GetItem", 3)
-
-	assert.Equal(t, 201, resp.StatusCode)
-	assert.Nil(t, err)
-
-	var response Response
-	_ = json.Unmarshal([]byte(resp.Body), &response)
-
-	assert.Regexp(t, `^M(-[346789QWERTYUPADFGHJKLXCVBNM]{4}){3}$`, response.Uid)
-	mock.AssertExpectationsForObjects(t, mDdb)
-}
-
-func TestHypenateUID(t *testing.T) {
-	assert.Equal(t, "M-FH4D-E694-A8LC", hyphenateUID("M-FH4DE694A8LC"))
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	assert.JSONEq(t, `{
+		"code":"INVALID_REQUEST",
+		"detail":"Invalid request",
+		"errors": [
+			{"source":"/source","detail":"must be APPLICANT or PHONE"},
+			{"source":"/type","detail":"must be personal-welfare or property-and-affairs"},
+			{"source":"/donor/dob","detail":"must match format YYYY-MM-DD"},
+			{"source":"/donor/postcode","detail":"must be a valid postcode"}
+		]
+	}`, resp.Body)
 }
