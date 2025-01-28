@@ -2,10 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"os"
-	"strings"
-	"time"
+	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -22,45 +19,30 @@ type Problem struct {
 	Errors     []Error `json:"errors,omitempty"`
 }
 
-type LogEvent struct {
-	ServiceName string    `json:"service_name"`
-	Timestamp   time.Time `json:"timestamp"`
-	Status      int       `json:"status"`
-	Problem     Problem   `json:"problem"`
-	ErrorString string    `json:"error_string,omitempty"`
-}
-
 var ProblemInternalServerError Problem = Problem{
-	StatusCode: 500,
+	StatusCode: http.StatusInternalServerError,
 	Code:       "INTERNAL_SERVER_ERROR",
 	Detail:     "Internal server error",
 }
 
+var ProblemRequestTimeout Problem = Problem{
+	StatusCode: http.StatusRequestTimeout,
+	Code:       "REQUEST_TIMEOUT",
+	Detail:     "Request timeout",
+}
+
 var ProblemInvalidRequest Problem = Problem{
-	StatusCode: 400,
+	StatusCode: http.StatusBadRequest,
 	Code:       "INVALID_REQUEST",
 	Detail:     "Invalid request",
 }
 
 func (problem Problem) Respond() (events.APIGatewayProxyResponse, error) {
-	var errorString = ""
-	for _, ve := range problem.Errors {
-		errorString += fmt.Sprintf("%s %s, ", ve.Source, ve.Detail)
-	}
-
-	_ = json.NewEncoder(os.Stdout).Encode(LogEvent{
-		ServiceName: "opg-data-lpa-uid",
-		Timestamp:   time.Now(),
-		Status:      problem.StatusCode,
-		Problem:     problem,
-		ErrorString: strings.TrimRight(errorString, ", "),
-	})
-
 	code := problem.StatusCode
 	body, err := json.Marshal(problem)
 
 	if err != nil {
-		code = 500
+		code = http.StatusInternalServerError
 		body = []byte("{\"code\":\"INTERNAL_SERVER_ERROR\",\"detail\":\"Internal server error\"}")
 	}
 
