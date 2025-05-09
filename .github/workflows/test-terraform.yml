@@ -1,0 +1,65 @@
+name: "Lint & Security Test Terraform"
+
+on:
+  workflow_call:
+    secrets:
+      github_token_secret:
+        required: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11.4
+          terraform_wrapper: false
+
+      - uses: actions/cache@v4
+        name: Cache plugin dir
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ hashFiles('.tflint.hcl') }}  
+
+      - uses: terraform-linters/setup-tflint@v4
+        name: Setup TFLint
+        with:
+          tflint_version: v0.52.0
+
+      - name: Show version
+        run: tflint --version  
+
+      - name: Init TFLint
+        run: tflint --init
+        env:
+          # https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/plugins.md#avoiding-rate-limiting
+          GITHUB_TOKEN: ${{ secrets.github_token_secret }}
+
+      - name: Terraform FMT
+        run: terraform fmt -check -recursive
+        working-directory: ./terraform/aws
+        
+      - name: Run TFLint
+        run: tflint --format compact --recursive
+      
+      - name: Trivy Image Vulnerability Scanner
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-ref: ./terraform/aws
+          scan-type: 'config'
+          hide-progress: true
+          format: 'sarif'
+          output: 'trivy-terraform-results.sarif'
+          exit-code: '1'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        id: trivy_upload_sarif
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          category: "Terraform"
+          sarif_file: "trivy-terraform-results.sarif"
+    
