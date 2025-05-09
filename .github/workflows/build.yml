@@ -184,3 +184,14 @@ jobs:
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy-demo:
+    name: Deploy to Demo
+    needs: [push, deploy-production]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      workspace_name: demo
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
