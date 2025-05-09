@@ -18,6 +18,8 @@ on:
       aws_secret_access_key:
         description: "AWS Secret Access Key"
         required: true
+      ssh_private_key_allow_list_repository:
+        required: true
 
 jobs:
   terraform_environment_workflow:
@@ -29,7 +31,7 @@ jobs:
       - uses: unfor19/install-aws-cli-action@v1
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.4.6
+          terraform_version: 1.11.4
           terraform_wrapper: false
       - name: Configure AWS Credentials For Terraform
         uses: aws-actions/configure-aws-credentials@v4
@@ -39,11 +41,6 @@ jobs:
           aws-region: eu-west-1
           role-duration-seconds: 3600
           role-session-name: OPGDataLpaUIDGithubAction
-
-      - name: Lint Terraform
-        id: tf_lint
-        run: terraform fmt -check -recursive
-        working-directory: ./terraform/aws
 
       - name: Terraform Init
         run: terraform init -input=false
