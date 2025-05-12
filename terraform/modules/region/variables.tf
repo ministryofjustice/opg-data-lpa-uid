@@ -13,16 +13,29 @@ variable "dns_weighting" {
   default = 50
 }
 
-variable "environment_name" {}
+variable "environment_name" {
+  type = string
+}
 
-variable "environment" {}
+variable "environment" {
+  type = object({
+    account_id   = string
+    account_name = string
+    allowed_arns = list(string)
+  })
+}
 
 variable "is_primary" {
   type    = bool
   default = false
 }
 
-variable "lambda_iam_role" {}
+variable "lambda_iam_role" {
+  type = object({
+    arn = string
+    id  = string
+  })
+}
 
 variable "app_version" {
   type = string

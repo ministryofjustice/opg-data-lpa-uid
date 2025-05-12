@@ -29,12 +29,15 @@ variable "environments" {
 
 variable "app_version" {
   default = "latest"
+  type    = string
 }
 
 variable "default_role" {
   default = "integrations-ci"
+  type    = string
 }
 
 variable "management_role" {
   default = "integrations-ci"
+  type    = string
 }

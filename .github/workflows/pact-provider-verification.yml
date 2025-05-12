@@ -19,7 +19,7 @@ jobs:
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.4.6
+          terraform_version: 1.11.4
           terraform_wrapper: false
       - run: make build up
       - name: Verify specified Pact
