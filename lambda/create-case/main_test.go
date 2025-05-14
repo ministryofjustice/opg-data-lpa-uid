@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
+	"strconv"
 	"testing"
 	"time"
 
@@ -10,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	etypes "github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -64,11 +69,44 @@ func TestHandleEvent(t *testing.T) {
 		}).
 		Return(nil, nil)
 
+	metricEvent, _ := json.Marshal(Metrics{
+		Metrics: []Metric{{
+			Project:          "MRLPA",
+			Category:         "metric",
+			Subcategory:      "DonorStubs",
+			Environment:      "E",
+			MeasureName:      "CREATED",
+			MeasureValue:     "1",
+			MeasureValueType: "BIGINT",
+			Time:             strconv.FormatInt(testNow.UnixMilli(), 10),
+		}},
+	})
+
+	eventbridgeClient := newMockEventbridge(t)
+	eventbridgeClient.EXPECT().
+		PutEvents(mock.Anything, &eventbridge.PutEventsInput{
+			Entries: []etypes.PutEventsRequestEntry{{
+				EventBusName: aws.String("B"),
+				Source:       aws.String("opg.poas.uid"),
+				DetailType:   aws.String("metric"),
+				Detail:       aws.String(string(metricEvent)),
+			}},
+		}).
+		Return(nil, nil)
+
 	logger := newMockLogger(t)
 	logger.EXPECT().
 		DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+	l := &Lambda{
+		logger:       logger,
+		dynamo:       dynamo,
+		tableName:    "T",
+		eventbridge:  eventbridgeClient,
+		eventBusName: "B",
+		environment:  "E",
+		now:          testNowFn,
+	}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: `{
@@ -126,11 +164,44 @@ func TestHandleEventWhenInitialUID(t *testing.T) {
 		}).
 		Return(nil, nil)
 
+	metricEvent, _ := json.Marshal(Metrics{
+		Metrics: []Metric{{
+			Project:          "MRLPA",
+			Category:         "metric",
+			Subcategory:      "DonorStubs",
+			Environment:      "E",
+			MeasureName:      "CREATED",
+			MeasureValue:     "1",
+			MeasureValueType: "BIGINT",
+			Time:             strconv.FormatInt(testNow.UnixMilli(), 10),
+		}},
+	})
+
+	eventbridgeClient := newMockEventbridge(t)
+	eventbridgeClient.EXPECT().
+		PutEvents(mock.Anything, &eventbridge.PutEventsInput{
+			Entries: []etypes.PutEventsRequestEntry{{
+				EventBusName: aws.String("B"),
+				Source:       aws.String("opg.poas.uid"),
+				DetailType:   aws.String("metric"),
+				Detail:       aws.String(string(metricEvent)),
+			}},
+		}).
+		Return(nil, nil)
+
 	logger := newMockLogger(t)
 	logger.EXPECT().
 		DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+	l := &Lambda{
+		logger:       logger,
+		dynamo:       dynamo,
+		tableName:    "T",
+		eventbridge:  eventbridgeClient,
+		eventBusName: "B",
+		environment:  "E",
+		now:          testNowFn,
+	}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: `{
@@ -185,11 +256,16 @@ func TestHandleEventWhenMetadataConflict(t *testing.T) {
 		Return(nil, nil).
 		Once()
 
+	eventbridgeClient := newMockEventbridge(t)
+	eventbridgeClient.EXPECT().
+		PutEvents(mock.Anything, mock.Anything).
+		Return(nil, nil)
+
 	logger := newMockLogger(t)
 	logger.EXPECT().
 		DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+	l := &Lambda{logger: logger, dynamo: dynamo, tableName: "T", eventbridge: eventbridgeClient, now: testNowFn}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: `{
@@ -206,6 +282,55 @@ func TestHandleEventWhenMetadataConflict(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
 	assert.JSONEq(t, `{"uid": "M-5206-6443-1532"}`, resp.Body)
+}
+
+func TestHandleEventWhenMetricErrors(t *testing.T) {
+	dynamo := newMockDynamo(t)
+	dynamo.EXPECT().
+		GetItem(mock.Anything, mock.Anything).
+		Return(&dynamodb.GetItemOutput{Item: map[string]types.AttributeValue{
+			"Maximum": &types.AttributeValueMemberN{Value: "6"},
+		}}, nil)
+	dynamo.EXPECT().
+		TransactWriteItems(mock.Anything, mock.Anything).
+		Return(nil, nil)
+
+	eventbridgeClient := newMockEventbridge(t)
+	eventbridgeClient.EXPECT().
+		PutEvents(mock.Anything, mock.Anything).
+		Return(nil, errors.New("problem"))
+
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
+	logger.EXPECT().
+		WarnContext(mock.Anything, "problem sending metric", mock.Anything)
+
+	l := &Lambda{
+		logger:       logger,
+		dynamo:       dynamo,
+		tableName:    "T",
+		eventbridge:  eventbridgeClient,
+		eventBusName: "B",
+		environment:  "E",
+		now:          testNowFn,
+	}
+
+	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
+		Body: `{
+			"type": "personal-welfare",
+			"source": "PHONE",
+			"donor": {
+				"name": "some name",
+				"dob": "1976-06-27",
+				"postcode": "B7A 8FJ"
+			}
+		}`,
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	assert.JSONEq(t, `{"uid": "M-5002-8368-4109"}`, resp.Body)
 }
 
 func TestHandleEventWhenEmptyBody(t *testing.T) {
