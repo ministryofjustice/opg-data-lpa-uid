@@ -20,9 +20,10 @@ locals {
 variable "environments" {
   type = map(
     object({
-      account_id   = string
-      account_name = string
-      allowed_arns = list(string)
+      account_id     = string
+      account_name   = string
+      allowed_arns   = list(string)
+      event_bus_name = string
     })
   )
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -13,6 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 )
 
 // Timeout is how long a request can be fulfilled for, before being terminated
@@ -34,16 +37,39 @@ type Dynamo interface {
 	TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error)
 }
 
+type Eventbridge interface {
+	PutEvents(ctx context.Context, params *eventbridge.PutEventsInput, optFns ...func(*eventbridge.Options)) (*eventbridge.PutEventsOutput, error)
+}
+
 type Logger interface {
 	DebugContext(ctx context.Context, msg string, args ...any)
+	WarnContext(ctx context.Context, msg string, args ...any)
 	ErrorContext(ctx context.Context, msg string, args ...any)
 }
 
+type Metrics struct {
+	Metrics []Metric `json:"metrics"`
+}
+
+type Metric struct {
+	Project          string
+	Category         string
+	Subcategory      string
+	Environment      string
+	MeasureName      string
+	MeasureValue     string
+	MeasureValueType string
+	Time             string
+}
+
 type Lambda struct {
-	dynamo    Dynamo
-	tableName string
-	logger    Logger
-	now       func() time.Time
+	dynamo       Dynamo
+	tableName    string
+	eventbridge  Eventbridge
+	eventBusName string
+	logger       Logger
+	environment  string
+	now          func() time.Time
 }
 
 func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -88,6 +114,32 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 				return ProblemInternalServerError.Respond()
 			}
 
+			if metricEvent, err := json.Marshal(Metrics{
+				Metrics: []Metric{{
+					Project:          "MRLPA",
+					Category:         "metric",
+					Subcategory:      "DonorStubs",
+					Environment:      l.environment,
+					MeasureName:      "CREATED",
+					MeasureValue:     "1",
+					MeasureValueType: "BIGINT",
+					Time:             strconv.FormatInt(l.now().UnixMilli(), 10),
+				}},
+			}); err != nil {
+				l.logger.WarnContext(ctx, "problem marshalling metric", slog.Any("err", err))
+			} else {
+				if _, err := l.eventbridge.PutEvents(ctx, &eventbridge.PutEventsInput{
+					Entries: []types.PutEventsRequestEntry{{
+						EventBusName: aws.String(l.eventBusName),
+						Source:       aws.String("opg.poas.uid"),
+						DetailType:   aws.String("metric"),
+						Detail:       aws.String(string(metricEvent)),
+					}},
+				}); err != nil {
+					l.logger.WarnContext(ctx, "problem sending metric", slog.Any("err", err))
+				}
+			}
+
 			response := Response{Uid: formatUID(max + 1)}
 
 			body, err := json.Marshal(response)
@@ -108,10 +160,12 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 
 func main() {
 	var (
-		ctx        = context.Background()
-		awsBaseURL = os.Getenv("AWS_BASE_URL")
-		tableName  = os.Getenv("AWS_DYNAMODB_TABLE_NAME")
-		debug      = os.Getenv("DEBUG") == "1"
+		ctx          = context.Background()
+		awsBaseURL   = os.Getenv("AWS_BASE_URL")
+		tableName    = os.Getenv("AWS_DYNAMODB_TABLE_NAME")
+		eventBusName = os.Getenv("EVENT_BUS_NAME")
+		debug        = os.Getenv("DEBUG") == "1"
+		environment  = os.Getenv("ENV")
 	)
 
 	level := slog.LevelInfo
@@ -136,10 +190,13 @@ func main() {
 	}
 
 	l := &Lambda{
-		logger:    logger,
-		dynamo:    dynamodb.NewFromConfig(cfg),
-		tableName: tableName,
-		now:       time.Now,
+		logger:       logger,
+		dynamo:       dynamodb.NewFromConfig(cfg),
+		tableName:    tableName,
+		eventbridge:  eventbridge.NewFromConfig(cfg),
+		eventBusName: eventBusName,
+		environment:  environment,
+		now:          time.Now,
 	}
 
 	lambda.Start(l.HandleEvent)
