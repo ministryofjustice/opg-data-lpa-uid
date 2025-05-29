@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_log_group" "lambda" {
-  name              = "/aws/lambda/lpa-uid-${local.environment_name}"
+  name              = "/aws/lambda/${aws_lambda_function.create_case.function_name}"
   kms_key_id        = aws_kms_key.cloudwatch_standard.arn
   retention_in_days = 400
 }
