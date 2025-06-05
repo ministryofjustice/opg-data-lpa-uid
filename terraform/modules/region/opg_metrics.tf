@@ -1,9 +1,5 @@
-data "aws_default_tags" "current" {
-  provider = aws.region
-}
-
 data "aws_secretsmanager_secret" "opg_metrics_api_key" {
-  name     = "opg-metrics-api-key/mrlpa-${data.aws_default_tags.current.tags.account-name}"
+  name     = "opg-metrics-api-key/lpa-uid-${data.aws_default_tags.current.tags.account-name}"
   provider = aws.shared
 }
 
@@ -14,7 +10,7 @@ data "aws_secretsmanager_secret_version" "opg_metrics_api_key" {
 }
 
 resource "aws_cloudwatch_event_connection" "opg_metrics" {
-  name               = "opg-metrics"
+  name               = "lpa-uid-to-opg-metrics"
   description        = "Account level - connection and auth for opg-metrics"
   authorization_type = "API_KEY"
 
@@ -31,7 +27,7 @@ resource "aws_cloudwatch_event_connection" "opg_metrics" {
 }
 
 resource "aws_cloudwatch_event_api_destination" "opg_metrics_put" {
-  name                             = "opg-metrics-put"
+  name                             = "lpa-uid-to-opg-metrics-put"
   description                      = "Account level - an endpoint to push metrics to"
   invocation_endpoint              = "${local.account.opg_metrics_endpoint}/metrics"
   http_method                      = "PUT"
@@ -40,9 +36,9 @@ resource "aws_cloudwatch_event_api_destination" "opg_metrics_put" {
   provider                         = aws.region
 }
 
-resource "aws_ssm_parameter" "opg_metrics_arn" {
-  name     = "opg-metrics-api-destination-arn"
-  type     = "String"
-  value    = aws_cloudwatch_event_api_destination.opg_metrics_put.arn
-  provider = aws.region
-}
+# resource "aws_ssm_parameter" "opg_metrics_arn" {
+#   name     = "opg-metrics-api-destination-arn"
+#   type     = "String"
+#   value    = aws_cloudwatch_event_api_destination.opg_metrics_put.arn
+#   provider = aws.region
+# }
