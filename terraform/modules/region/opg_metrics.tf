@@ -11,7 +11,7 @@ data "aws_secretsmanager_secret_version" "opg_metrics_api_key" {
 
 resource "aws_cloudwatch_event_connection" "opg_metrics" {
   name               = "lpa-uid-to-opg-metrics"
-  description        = "Account level - connection and auth for opg-metrics"
+  description        = "A connection and auth for opg-metrics"
   authorization_type = "API_KEY"
 
   auth_parameters {
@@ -28,7 +28,7 @@ resource "aws_cloudwatch_event_connection" "opg_metrics" {
 
 resource "aws_cloudwatch_event_api_destination" "opg_metrics_put" {
   name                             = "lpa-uid-to-opg-metrics-put"
-  description                      = "Account level - an endpoint to push metrics to"
+  description                      = "an endpoint to push metrics to"
   invocation_endpoint              = "${local.account.opg_metrics_endpoint}/metrics"
   http_method                      = "PUT"
   invocation_rate_limit_per_second = 300

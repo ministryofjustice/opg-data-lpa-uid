@@ -12,6 +12,7 @@ module "eu-west-1" {
   providers = {
     aws            = aws.eu-west-1
     aws.management = aws.management
+    aws.shared     = aws.shared-eu-west-1
   }
 }
 
@@ -28,7 +29,7 @@ module "eu-west-2" {
   lambda_iam_role           = module.global.lambda_iam_role
 
   providers = {
-    aws            = aws.eu-west-2
-    aws.management = aws.management
+    aws        = aws.eu-west-2
+    aws.shared = aws.shared-eu-west-2
   }
 }
