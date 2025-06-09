@@ -41,9 +41,13 @@ variable "app_version" {
   type = string
 }
 
-variable "opg_metrics_endpoint" {
-  type = string
+variable "opg_metrics" {
+  type = object({
+    enabled  = bool
+    endpoint = string
+  })
 }
+
 
 locals {
   environment_name     = "${var.environment_name}-${data.aws_region.current.name}"

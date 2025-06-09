@@ -20,11 +20,14 @@ locals {
 variable "environments" {
   type = map(
     object({
-      account_id           = string
-      account_name         = string
-      allowed_arns         = list(string)
-      shared_account_id    = string
-      opg_metrics_endpoint = string
+      account_id        = string
+      account_name      = string
+      allowed_arns      = list(string)
+      shared_account_id = string
+      opg_metrics = object({
+        enabled  = bool
+        endpoint = string
+      })
     })
   )
 }

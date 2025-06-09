@@ -8,7 +8,10 @@ module "eu-west-1" {
   environment               = local.environment
   is_primary                = true
   lambda_iam_role           = module.global.lambda_iam_role
-  opg_metrics_endpoint      = local.environment.opg_metrics_endpoint
+  opg_metrics = {
+    enabled  = local.environment.opg_metrics.enabled
+    endpoint = local.environment.opg_metrics.endpoint
+  }
 
   providers = {
     aws            = aws.eu-west-1
@@ -28,7 +31,11 @@ module "eu-west-2" {
   environment               = local.environment
   is_primary                = false
   lambda_iam_role           = module.global.lambda_iam_role
-  opg_metrics_endpoint      = local.environment.opg_metrics_endpoint
+  opg_metrics = {
+    enabled  = false
+    endpoint = local.environment.opg_metrics.endpoint
+  }
+
 
   providers = {
     aws            = aws.eu-west-2
