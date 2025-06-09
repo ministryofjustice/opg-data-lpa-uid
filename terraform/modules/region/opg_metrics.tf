@@ -20,7 +20,6 @@ resource "aws_cloudwatch_event_connection" "opg_metrics" {
       value = data.aws_secretsmanager_secret_version.opg_metrics_api_key.secret_string
     }
   }
-  provider = aws.region
   lifecycle {
     ignore_changes = [auth_parameters[0].invocation_http_parameters]
   }
@@ -33,7 +32,6 @@ resource "aws_cloudwatch_event_api_destination" "opg_metrics_put" {
   http_method                      = "PUT"
   invocation_rate_limit_per_second = 300
   connection_arn                   = aws_cloudwatch_event_connection.opg_metrics.arn
-  provider                         = aws.region
 }
 
 # resource "aws_ssm_parameter" "opg_metrics_arn" {
