@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
-      tag: ${{ steps.bump_version.outputs.tag }}
+      tag: ${{ steps.semver_tag.outputs.created_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -105,17 +105,11 @@ jobs:
           fi
         id: extract_branch
       - name: Bump version
-        id: bump_version
-        uses: anothrNick/github-tag-action@1.73.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INITIAL_VERSION: 0.0.0
-          DEFAULT_BRANCH: main
-          DEFAULT_BUMP: minor
-          PRERELEASE: true
-          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
-          RELEASE_BRANCHES: main
-          WITH_V: true
+        id: semver_tag
+        uses: ministryofjustice/opg-github-actions/.github/actions/semver-tag@c9c5dfb290b8f614df0884928c521165ba83d630 # v3.1.4
+        with:
+          default_bump: minor
+          releases_enabled: false
 
       - uses: unfor19/install-aws-cli-action@v1
       - name: Configure AWS Credentials
@@ -147,16 +141,16 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: integrations/lpa-uid-create-case-lambda
         run: |
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.semver_tag.outputs.created_tag }}
           if [ $BRANCH_NAME == "main" ]; then
             docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:main
             # We want all of the tags pushed
             docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
           else
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.semver_tag.outputs.created_tag }}
           fi
 
-          echo "Container tag: ${{ steps.bump_version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "Container tag: ${{ steps.semver_tag.outputs.created_tag }}" >> $GITHUB_STEP_SUMMARY
 
   deploy-development:
     name: Deploy to Development
