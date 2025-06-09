@@ -41,6 +41,10 @@ variable "app_version" {
   type = string
 }
 
+variable "opg_metrics_endpoint" {
+  type = string
+}
+
 locals {
   environment_name     = "${var.environment_name}-${data.aws_region.current.name}"
   policy_region_prefix = lower(replace(data.aws_region.current.name, "-", ""))
