@@ -28,7 +28,7 @@ resource "aws_cloudwatch_event_connection" "opg_metrics" {
 resource "aws_cloudwatch_event_api_destination" "opg_metrics_put" {
   name                             = "lpa-uid-to-opg-metrics-put"
   description                      = "an endpoint to push metrics to"
-  invocation_endpoint              = "${local.account.opg_metrics_endpoint}/metrics"
+  invocation_endpoint              = "${var.opg_metrics_endpoint}/metrics"
   http_method                      = "PUT"
   invocation_rate_limit_per_second = 300
   connection_arn                   = aws_cloudwatch_event_connection.opg_metrics.arn
