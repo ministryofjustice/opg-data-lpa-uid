@@ -28,6 +28,7 @@ module "eu-west-2" {
   environment               = local.environment
   is_primary                = false
   lambda_iam_role           = module.global.lambda_iam_role
+  opg_metrics_endpoint      = local.environment.opg_metrics_endpoint
 
   providers = {
     aws            = aws.eu-west-2
