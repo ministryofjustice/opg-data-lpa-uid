@@ -74,3 +74,31 @@ provider "aws" {
     tags = local.default_tags
   }
 }
+
+provider "aws" {
+  alias  = "shared-eu-west-1"
+  region = "eu-west-1"
+
+  assume_role {
+    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.default_role}"
+    session_name = "terraform-session"
+  }
+
+  default_tags {
+    tags = local.default_tags
+  }
+}
+
+provider "aws" {
+  alias  = "shared-eu-west-2"
+  region = "eu-west-2"
+
+  assume_role {
+    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.default_role}"
+    session_name = "terraform-session"
+  }
+
+  default_tags {
+    tags = local.default_tags
+  }
+}
