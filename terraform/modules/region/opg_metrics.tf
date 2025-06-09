@@ -1,5 +1,5 @@
 data "aws_secretsmanager_secret" "opg_metrics_api_key" {
-  name     = "opg-metrics-api-key/lpa-uid-${data.aws_default_tags.current.tags.account-name}"
+  name     = "opg-metrics-api-key/lpa-uid-${data.aws_default_tags.current.tags.account}"
   provider = aws.shared
 }
 
