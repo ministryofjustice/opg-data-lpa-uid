@@ -11,6 +11,7 @@ module "eu-west-1" {
   opg_metrics = {
     enabled  = local.environment.opg_metrics.enabled
     endpoint = local.environment.opg_metrics.endpoint
+    iam_role = module.global.opg_metrics_iam_role
   }
 
   providers = {
@@ -35,6 +36,7 @@ module "eu-west-2" {
   opg_metrics = {
     enabled  = false
     endpoint = local.environment.opg_metrics.endpoint
+    iam_role = module.global.opg_metrics_iam_role
   }
 
 

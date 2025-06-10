@@ -45,6 +45,7 @@ variable "opg_metrics" {
   type = object({
     enabled  = bool
     endpoint = string
+    iam_role = any
   })
 }
 
