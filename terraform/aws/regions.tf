@@ -17,6 +17,7 @@ module "eu-west-1" {
     aws            = aws.eu-west-1
     aws.management = aws.management
     aws.shared     = aws.shared-eu-west-1
+    aws.global     = aws.global
   }
 }
 
@@ -41,5 +42,6 @@ module "eu-west-2" {
     aws            = aws.eu-west-2
     aws.management = aws.management
     aws.shared     = aws.shared-eu-west-2
+    aws.global     = aws.global
   }
 }
