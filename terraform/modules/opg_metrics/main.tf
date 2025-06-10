@@ -22,14 +22,3 @@ resource "aws_cloudwatch_event_api_destination" "opg_metrics_put" {
   invocation_rate_limit_per_second = 300
   connection_arn                   = aws_cloudwatch_event_connection.opg_metrics.arn
 }
-
-# resource "aws_ssm_parameter" "opg_metrics_arn" {
-#   name     = "opg-metrics-api-destination-arn"
-#   type     = "String"
-#   value    = aws_cloudwatch_event_api_destination.opg_metrics_put.arn
-#   provider = aws.region
-# }
-
-output "opg_metrics_api_destination_arn" {
-  value = aws_cloudwatch_event_api_destination.opg_metrics_put.arn
-}
