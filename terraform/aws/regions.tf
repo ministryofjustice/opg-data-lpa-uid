@@ -8,10 +8,17 @@ module "eu-west-1" {
   environment               = local.environment
   is_primary                = true
   lambda_iam_role           = module.global.lambda_iam_role
+  opg_metrics = {
+    enabled  = local.environment.opg_metrics.enabled
+    endpoint = local.environment.opg_metrics.endpoint
+    iam_role = module.global.opg_metrics_iam_role
+  }
 
   providers = {
     aws            = aws.eu-west-1
     aws.management = aws.management
+    aws.shared     = aws.shared-eu-west-1
+    aws.global     = aws.global
   }
 }
 
@@ -26,9 +33,17 @@ module "eu-west-2" {
   environment               = local.environment
   is_primary                = false
   lambda_iam_role           = module.global.lambda_iam_role
+  opg_metrics = {
+    enabled  = false
+    endpoint = local.environment.opg_metrics.endpoint
+    iam_role = module.global.opg_metrics_iam_role
+  }
+
 
   providers = {
     aws            = aws.eu-west-2
     aws.management = aws.management
+    aws.shared     = aws.shared-eu-west-2
+    aws.global     = aws.global
   }
 }

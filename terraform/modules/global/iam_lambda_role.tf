@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda" {
-  name               = "lpa-uid-${var.environment_name}"
+  name               = "lpa-uid-${data.aws_default_tags.current.tags.environment-name}"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
 }
 
