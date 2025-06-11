@@ -1,5 +1,5 @@
 module "event_bus" {
-  source = "../event_bus"
+  source = "./modules/event_bus"
   providers = {
     aws.region = aws
   }

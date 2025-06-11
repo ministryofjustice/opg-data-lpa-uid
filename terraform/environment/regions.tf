@@ -1,5 +1,5 @@
 module "eu-west-1" {
-  source = "../modules/region"
+  source = "./region"
 
   app_version               = var.app_version
   dns_weighting             = 100
@@ -23,7 +23,7 @@ module "eu-west-1" {
 }
 
 module "eu-west-2" {
-  source = "../modules/region"
+  source = "./region"
 
   app_version               = var.app_version
   dns_weighting             = 0
