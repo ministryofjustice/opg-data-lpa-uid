@@ -22,7 +22,7 @@ jobs:
         name: Cache plugin dir
         with:
           path: ~/.tflint.d/plugins
-          key: tflint-${{ hashFiles('.tflint.hcl') }}  
+          key: tflint-${{ hashFiles('.tflint.hcl') }}
 
       - uses: terraform-linters/setup-tflint@v4
         name: Setup TFLint
@@ -30,7 +30,7 @@ jobs:
           tflint_version: v0.52.0
 
       - name: Show version
-        run: tflint --version  
+        run: tflint --version
 
       - name: Init TFLint
         run: tflint --init
@@ -40,15 +40,15 @@ jobs:
 
       - name: Terraform FMT
         run: terraform fmt -check -recursive
-        working-directory: ./terraform/aws
-        
+        working-directory: ./terraform/environment
+
       - name: Run TFLint
         run: tflint --format compact --recursive
-      
+
       - name: Trivy Image Vulnerability Scanner
         uses: aquasecurity/trivy-action@0.31.0
         with:
-          scan-ref: ./terraform/aws
+          scan-ref: ./terraform/environment
           scan-type: 'config'
           hide-progress: true
           format: 'sarif'
@@ -62,4 +62,3 @@ jobs:
         with:
           category: "Terraform"
           sarif_file: "trivy-terraform-results.sarif"
-    
