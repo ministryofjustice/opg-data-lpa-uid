@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_event_connection" "opg_metrics" {
-  name               = "lpa-uid-to-opg-metrics"
+  name               = "lpa-uid-to-opg-metrics-${data.aws_default_tags.current.tags.environment-name}"
   description        = "A connection and auth for opg-metrics"
   authorization_type = "API_KEY"
 
@@ -15,7 +15,7 @@ resource "aws_cloudwatch_event_connection" "opg_metrics" {
 }
 
 resource "aws_cloudwatch_event_api_destination" "opg_metrics_put" {
-  name                             = "lpa-uid-to-opg-metrics-put"
+  name                             = "lpa-uid-to-opg-metrics-put-${data.aws_default_tags.current.tags.environment-name}"
   description                      = "an endpoint to push metrics to"
   invocation_endpoint              = "${var.opg_metrics_endpoint}/metrics"
   http_method                      = "PUT"
