@@ -1,5 +1,5 @@
 module "global" {
-  source = "../modules/global"
+  source = "./global"
   providers = {
     aws = aws.global
   }
