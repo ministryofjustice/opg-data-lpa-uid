@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+
 data "aws_default_tags" "current" {}
 
 data "aws_secretsmanager_secret" "opg_metrics_api_key" {

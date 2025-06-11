@@ -1,10 +1,10 @@
 resource "aws_cloudwatch_event_rule" "metric_events" {
   name           = "${data.aws_default_tags.current.tags.environment-name}-metric-events"
   description    = "forward events to opg-metrics service"
-  event_bus_name = aws_cloudwatch_event_bus.main.name
+  event_bus_name = var.aws_cloudwatch_event_bus.name
 
   event_pattern = jsonencode({
-    source      = ["opg.poas.makeregister"]
+    source      = ["opg.poas.lpauid"]
     detail-type = ["metric"]
   })
   provider = aws.region
@@ -23,15 +23,15 @@ data "aws_iam_policy_document" "opg_metrics" {
     effect  = "Allow"
     actions = ["events:InvokeApiDestination"]
     resources = [
-      "${var.opg_metrics_api_destination_arn}*"
+      "${aws_cloudwatch_event_api_destination.opg_metrics_put.arn}*"
     ]
   }
   provider = aws.global
 }
 
 resource "aws_cloudwatch_event_target" "opg_metrics" {
-  arn            = var.opg_metrics_api_destination_arn
-  event_bus_name = aws_cloudwatch_event_bus.main.name
+  arn            = aws_cloudwatch_event_api_destination.opg_metrics_put.arn
+  event_bus_name = var.aws_cloudwatch_event_bus.name
   rule           = aws_cloudwatch_event_rule.metric_events.name
   role_arn       = var.opg_metrics_api_destination_role.arn
   http_target {
