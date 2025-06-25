@@ -28,6 +28,7 @@ variable "environments" {
         enabled  = bool
         endpoint = string
       })
+      event_bus_name = string
     })
   )
 }

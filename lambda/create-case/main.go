@@ -13,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
+	"github.com/ministryofjustice/opg-data-lpa-uid/internal/event"
 )
 
 // Timeout is how long a request can be fulfilled for, before being terminated
@@ -39,21 +41,26 @@ type Logger interface {
 	ErrorContext(ctx context.Context, msg string, args ...any)
 }
 
-type Lambda struct {
-	dynamo    Dynamo
-	tableName string
-	logger    Logger
-	now       func() time.Time
+type EventClient interface {
+	SendMetric(ctx context.Context, category event.Category, measure event.Measure) error
 }
 
-func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+type Lambda struct {
+	dynamo      Dynamo
+	tableName   string
+	logger      Logger
+	now         func() time.Time
+	eventClient EventClient
+}
+
+func (l *Lambda) HandleEvent(e events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
-	l.logger.DebugContext(ctx, "event", slog.String("body", event.Body))
+	l.logger.DebugContext(ctx, "event", slog.String("body", e.Body))
 
 	var data Request
-	if err := json.Unmarshal([]byte(event.Body), &data); err != nil {
+	if err := json.Unmarshal([]byte(e.Body), &data); err != nil {
 		l.logger.ErrorContext(ctx, "error unmarshalling request", slog.Any("err", err))
 		return ProblemInvalidRequest.Respond()
 	}
@@ -88,6 +95,10 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 				return ProblemInternalServerError.Respond()
 			}
 
+			if err = l.eventClient.SendMetric(ctx, event.CategoryLPAStub, event.MeasureCreated); err != nil {
+				l.logger.ErrorContext(ctx, "error sending metric", slog.Any("err", err))
+			}
+
 			response := Response{Uid: formatUID(max + 1)}
 
 			body, err := json.Marshal(response)
@@ -108,10 +119,12 @@ func (l *Lambda) HandleEvent(event events.APIGatewayProxyRequest) (events.APIGat
 
 func main() {
 	var (
-		ctx        = context.Background()
-		awsBaseURL = os.Getenv("AWS_BASE_URL")
-		tableName  = os.Getenv("AWS_DYNAMODB_TABLE_NAME")
-		debug      = os.Getenv("DEBUG") == "1"
+		ctx          = context.Background()
+		awsBaseURL   = os.Getenv("AWS_BASE_URL")
+		tableName    = os.Getenv("AWS_DYNAMODB_TABLE_NAME")
+		debug        = os.Getenv("DEBUG") == "1"
+		eventBusName = os.Getenv("EVENT_BUS_NAME")
+		environment  = os.Getenv("ENVIRONMENT")
 	)
 
 	level := slog.LevelInfo
@@ -136,10 +149,11 @@ func main() {
 	}
 
 	l := &Lambda{
-		logger:    logger,
-		dynamo:    dynamodb.NewFromConfig(cfg),
-		tableName: tableName,
-		now:       time.Now,
+		logger:      logger,
+		dynamo:      dynamodb.NewFromConfig(cfg),
+		tableName:   tableName,
+		now:         time.Now,
+		eventClient: event.NewClient(cfg, time.Now, eventBusName, environment),
 	}
 
 	lambda.Start(l.HandleEvent)
