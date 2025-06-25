@@ -19,19 +19,19 @@ type Problem struct {
 	Errors     []Error `json:"errors,omitempty"`
 }
 
-var ProblemInternalServerError Problem = Problem{
+var ProblemInternalServerError = Problem{
 	StatusCode: http.StatusInternalServerError,
 	Code:       "INTERNAL_SERVER_ERROR",
 	Detail:     "Internal server error",
 }
 
-var ProblemRequestTimeout Problem = Problem{
+var ProblemRequestTimeout = Problem{
 	StatusCode: http.StatusRequestTimeout,
 	Code:       "REQUEST_TIMEOUT",
 	Detail:     "Request timeout",
 }
 
-var ProblemInvalidRequest Problem = Problem{
+var ProblemInvalidRequest = Problem{
 	StatusCode: http.StatusBadRequest,
 	Code:       "INVALID_REQUEST",
 	Detail:     "Invalid request",
