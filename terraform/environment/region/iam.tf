@@ -56,4 +56,15 @@ data "aws_iam_policy_document" "lambda" {
       var.is_primary ? aws_kms_key.dynamodb[0].arn : aws_kms_replica_key.dynamodb[0].arn,
     ]
   }
+
+  statement {
+    sid    = "${local.policy_region_prefix}AllowEventBusAccess"
+    effect = "Allow"
+    actions = [
+      "events:PutEvents",
+    ]
+    resources = [
+      module.event_bus.event_bus.arn
+    ]
+  }
 }
