@@ -5,11 +5,13 @@ resource "aws_lambda_function" "create_case" {
   image_uri = "311462405659.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/integrations/lpa-uid-create-case-lambda:${var.app_version}"
 
   role        = var.lambda_iam_role.arn
-  timeout     = 5
+  timeout     = 6
   memory_size = 128
   environment {
     variables = {
       AWS_DYNAMODB_TABLE_NAME = var.is_primary ? aws_dynamodb_table.lpa_uid[0].name : split(":", aws_dynamodb_table_replica.lpa_uid[0].id)[0]
+      EVENT_BUS_NAME          = module.event_bus.event_bus.name
+      ENVIRONMENT             = local.environment_name
     }
   }
   tracing_config {
