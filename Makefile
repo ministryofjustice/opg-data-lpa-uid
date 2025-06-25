@@ -6,6 +6,10 @@ build:
 up:
 	docker compose up -d --wait localstack
 
+generate:
+	git ls-files | grep '.*/mock_.*_test\.go' | xargs rm -f
+	go tool mockery
+
 test-api-eu-west-1 test-api-eu-west-2:
 	curl \
 		-XPOST $(URL)/cases \
