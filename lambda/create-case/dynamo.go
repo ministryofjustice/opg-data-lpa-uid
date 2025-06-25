@@ -27,6 +27,10 @@ const (
 
 type LpaSource string
 
+func (ls LpaSource) String() string {
+	return string(ls)
+}
+
 const (
 	LpaSourceApplicant LpaSource = "APPLICANT"
 	LpaSourcePhone     LpaSource = "PHONE"
