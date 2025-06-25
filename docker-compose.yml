@@ -2,8 +2,8 @@ services:
   lambda-create-case:
     image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
     build:
-      context: ./lambda/create-case
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
     environment:
       AWS_REGION: eu-west-1
       AWS_BASE_URL: http://localstack:4566
@@ -11,6 +11,8 @@ services:
       AWS_ACCESS_KEY_ID: localstack
       AWS_SECRET_ACCESS_KEY: localstack
       DEBUG: 1
+      EVENT_BUS_NAME: "default"
+      ENVIRONMENT: "local"
     volumes:
       - "./lambda/.aws-lambda-rie:/aws-lambda"
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main

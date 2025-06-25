@@ -1,6 +1,9 @@
 package main
 
 import (
+	"errors"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"testing"
 	"time"
@@ -10,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/ministryofjustice/opg-data-lpa-uid/internal/event"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -20,71 +24,91 @@ var (
 )
 
 func TestHandleEvent(t *testing.T) {
-	dynamo := newMockDynamo(t)
-	dynamo.EXPECT().
-		GetItem(mock.Anything, mock.Anything).
-		Return(&dynamodb.GetItemOutput{Item: map[string]types.AttributeValue{
-			"Maximum": &types.AttributeValueMemberN{Value: "6"},
-		}}, nil)
-	dynamo.EXPECT().
-		TransactWriteItems(mock.Anything, &dynamodb.TransactWriteItemsInput{
-			TransactItems: []types.TransactWriteItem{
-				{
-					Update: &types.Update{
-						TableName: aws.String("T"),
-						Key: map[string]types.AttributeValue{
-							"uid": &types.AttributeValueMemberS{Value: "#METADATA"},
+	testcases := map[LpaSource]event.Measure{
+		LpaSourcePhone:     event.MeasurePaperDonor,
+		LpaSourceApplicant: event.MeasureOnlineDonor,
+	}
+
+	for source, measure := range testcases {
+		t.Run(source.String(), func(t *testing.T) {
+			dynamo := newMockDynamo(t)
+			dynamo.EXPECT().
+				GetItem(mock.Anything, mock.Anything).
+				Return(&dynamodb.GetItemOutput{Item: map[string]types.AttributeValue{
+					"Maximum": &types.AttributeValueMemberN{Value: "6"},
+				}}, nil)
+			dynamo.EXPECT().
+				TransactWriteItems(mock.Anything, &dynamodb.TransactWriteItemsInput{
+					TransactItems: []types.TransactWriteItem{
+						{
+							Update: &types.Update{
+								TableName: aws.String("T"),
+								Key: map[string]types.AttributeValue{
+									"uid": &types.AttributeValueMemberS{Value: "#METADATA"},
+								},
+								ConditionExpression: aws.String("Maximum = :currentMaximum"),
+								UpdateExpression:    aws.String("SET Maximum = :nextMaximum"),
+								ExpressionAttributeValues: map[string]types.AttributeValue{
+									":currentMaximum": &types.AttributeValueMemberN{Value: "6"},
+									":nextMaximum":    &types.AttributeValueMemberN{Value: "7"},
+								},
+							},
 						},
-						ConditionExpression: aws.String("Maximum = :currentMaximum"),
-						UpdateExpression:    aws.String("SET Maximum = :nextMaximum"),
-						ExpressionAttributeValues: map[string]types.AttributeValue{
-							":currentMaximum": &types.AttributeValueMemberN{Value: "6"},
-							":nextMaximum":    &types.AttributeValueMemberN{Value: "7"},
+						{
+							Put: &types.Put{
+								TableName: aws.String("T"),
+								Item: map[string]types.AttributeValue{
+									"uid":        &types.AttributeValueMemberS{Value: "M-5002-8368-4109"},
+									"created_at": &types.AttributeValueMemberS{Value: testNow.Format(time.RFC3339Nano)},
+									"type":       &types.AttributeValueMemberS{Value: "personal-welfare"},
+									"source":     &types.AttributeValueMemberS{Value: source.String()},
+									"donor": &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
+										"name":     &types.AttributeValueMemberS{Value: "some name"},
+										"dob":      &types.AttributeValueMemberS{Value: "1976-06-27"},
+										"postcode": &types.AttributeValueMemberS{Value: "B7A 8FJ"},
+									}},
+								},
+								ConditionExpression: aws.String("attribute_not_exists(uid)"),
+							},
 						},
 					},
-				},
-				{
-					Put: &types.Put{
-						TableName: aws.String("T"),
-						Item: map[string]types.AttributeValue{
-							"uid":        &types.AttributeValueMemberS{Value: "M-5002-8368-4109"},
-							"created_at": &types.AttributeValueMemberS{Value: testNow.Format(time.RFC3339Nano)},
-							"type":       &types.AttributeValueMemberS{Value: "personal-welfare"},
-							"source":     &types.AttributeValueMemberS{Value: "PHONE"},
-							"donor": &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
-								"name":     &types.AttributeValueMemberS{Value: "some name"},
-								"dob":      &types.AttributeValueMemberS{Value: "1976-06-27"},
-								"postcode": &types.AttributeValueMemberS{Value: "B7A 8FJ"},
-							}},
-						},
-						ConditionExpression: aws.String("attribute_not_exists(uid)"),
-					},
-				},
-			},
-		}).
-		Return(nil, nil)
+				}).
+				Return(nil, nil)
 
-	logger := newMockLogger(t)
-	logger.EXPECT().
-		DebugContext(mock.Anything, mock.Anything, mock.Anything)
+			logger := newMockLogger(t)
+			logger.EXPECT().
+				DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+			eventClient := newMockEventClient(t)
+			eventClient.EXPECT().
+				SendMetric(mock.Anything, event.CategoryDraftLPACreated, measure).
+				Return(nil)
 
-	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
-		Body: `{
-			"type": "personal-welfare",
-			"source": "PHONE",
-			"donor": {
-				"name": "some name",
-				"dob": "1976-06-27",
-				"postcode": "B7A 8FJ"
+			l := &Lambda{
+				dynamo:      dynamo,
+				logger:      logger,
+				tableName:   "T",
+				now:         testNowFn,
+				eventClient: eventClient,
 			}
-		}`,
-	})
 
-	assert.Nil(t, err)
-	assert.Equal(t, http.StatusCreated, resp.StatusCode)
-	assert.JSONEq(t, `{"uid": "M-5002-8368-4109"}`, resp.Body)
+			resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
+				Body: fmt.Sprintf(`{
+				"type": "personal-welfare",
+					"source": "%s",
+					"donor": {
+						"name": "some name",
+						"dob": "1976-06-27",
+						"postcode": "B7A 8FJ"
+					}
+				}`, source.String()),
+			})
+
+			assert.Nil(t, err)
+			assert.Equal(t, http.StatusCreated, resp.StatusCode)
+			assert.JSONEq(t, `{"uid": "M-5002-8368-4109"}`, resp.Body)
+		})
+	}
 }
 
 func TestHandleEventWhenInitialUID(t *testing.T) {
@@ -130,7 +154,18 @@ func TestHandleEventWhenInitialUID(t *testing.T) {
 	logger.EXPECT().
 		DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+	eventClient := newMockEventClient(t)
+	eventClient.EXPECT().
+		SendMetric(mock.Anything, event.CategoryDraftLPACreated, event.MeasurePaperDonor).
+		Return(nil)
+
+	l := &Lambda{
+		dynamo:      dynamo,
+		logger:      logger,
+		tableName:   "T",
+		now:         testNowFn,
+		eventClient: eventClient,
+	}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: `{
@@ -189,7 +224,18 @@ func TestHandleEventWhenMetadataConflict(t *testing.T) {
 	logger.EXPECT().
 		DebugContext(mock.Anything, mock.Anything, mock.Anything)
 
-	l := &Lambda{dynamo: dynamo, logger: logger, tableName: "T", now: testNowFn}
+	eventClient := newMockEventClient(t)
+	eventClient.EXPECT().
+		SendMetric(mock.Anything, event.CategoryDraftLPACreated, event.MeasurePaperDonor).
+		Return(nil)
+
+	l := &Lambda{
+		dynamo:      dynamo,
+		logger:      logger,
+		tableName:   "T",
+		now:         testNowFn,
+		eventClient: eventClient,
+	}
 
 	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
 		Body: `{
@@ -283,4 +329,53 @@ func TestHandleEventWhenInvalidBodyHasInvalidFields(t *testing.T) {
 			{"source":"/donor/postcode","detail":"must be a valid postcode"}
 		]
 	}`, resp.Body)
+}
+
+func TestHandleEventWhenEventClientError(t *testing.T) {
+	dynamo := newMockDynamo(t)
+	dynamo.EXPECT().
+		GetItem(mock.Anything, mock.Anything).
+		Return(&dynamodb.GetItemOutput{Item: map[string]types.AttributeValue{
+			"Maximum": &types.AttributeValueMemberN{Value: "6"},
+		}}, nil)
+	dynamo.EXPECT().
+		TransactWriteItems(mock.Anything, mock.Anything).
+		Return(nil, nil)
+
+	metricErr := errors.New("something went wrong")
+
+	logger := newMockLogger(t)
+	logger.EXPECT().
+		DebugContext(mock.Anything, mock.Anything, mock.Anything)
+	logger.EXPECT().
+		ErrorContext(mock.Anything, "error sending metric", slog.Any("err", metricErr))
+
+	eventClient := newMockEventClient(t)
+	eventClient.EXPECT().
+		SendMetric(mock.Anything, mock.Anything, mock.Anything).
+		Return(metricErr)
+
+	l := &Lambda{
+		dynamo:      dynamo,
+		logger:      logger,
+		tableName:   "T",
+		now:         testNowFn,
+		eventClient: eventClient,
+	}
+
+	resp, err := l.HandleEvent(events.APIGatewayProxyRequest{
+		Body: `{
+			"type": "personal-welfare",
+			"source": "PHONE",
+			"donor": {
+				"name": "some name",
+				"dob": "1976-06-27",
+				"postcode": "B7A 8FJ"
+			}
+		}`,
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	assert.JSONEq(t, `{"uid": "M-5002-8368-4109"}`, resp.Body)
 }
