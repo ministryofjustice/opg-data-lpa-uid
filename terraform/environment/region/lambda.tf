@@ -10,6 +10,8 @@ resource "aws_lambda_function" "create_case" {
   environment {
     variables = {
       AWS_DYNAMODB_TABLE_NAME = var.is_primary ? aws_dynamodb_table.lpa_uid[0].name : split(":", aws_dynamodb_table_replica.lpa_uid[0].id)[0]
+      EVENT_BUS_NAME          = module.event_bus.event_bus.name
+      ENVIRONMENT             = local.environment_name
     }
   }
   tracing_config {
