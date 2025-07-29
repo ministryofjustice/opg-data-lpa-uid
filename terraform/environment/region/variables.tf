@@ -50,6 +50,6 @@ variable "opg_metrics" {
 }
 
 locals {
-  environment_name     = "${var.environment_name}-${data.aws_region.current.name}"
-  policy_region_prefix = lower(replace(data.aws_region.current.name, "-", ""))
+  environment_name     = "${var.environment_name}-${data.aws_region.current.region}"
+  policy_region_prefix = lower(replace(data.aws_region.current.region, "-", ""))
 }

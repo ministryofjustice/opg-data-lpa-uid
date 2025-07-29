@@ -79,7 +79,7 @@ jobs:
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.11.4
+          terraform_version: 1.12.2
           terraform_wrapper: false
       - name: Restore Image
         run: docker load -i /tmp/images/lambda-create-case.tar
@@ -176,21 +176,9 @@ jobs:
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
-  deploy-production:
-    name: Deploy to Production
-    needs: [push, deploy-preproduction]
-    uses: ./.github/workflows/deploy.yml
-    with:
-      workspace_name: production
-      version_tag: ${{ needs.push.outputs.tag }}
-    secrets:
-      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
-
   deploy-demo:
     name: Deploy to Demo
-    needs: [push, deploy-production]
+    needs: [push, deploy-preproduction]
     uses: ./.github/workflows/deploy.yml
     with:
       workspace_name: demo

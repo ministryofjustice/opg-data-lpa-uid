@@ -70,7 +70,7 @@ resource "aws_api_gateway_stage" "current" {
 }
 
 data "aws_wafv2_web_acl" "integrations" {
-  name  = "integrations-${var.environment.account_name}-${data.aws_region.current.name}-web-acl"
+  name  = "integrations-${var.environment.account_name}-${data.aws_region.current.region}-web-acl"
   scope = "REGIONAL"
 }
 
@@ -123,7 +123,7 @@ resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
 
 data "aws_iam_policy_document" "lpa_uid" {
   override_policy_documents = local.ip_restrictions_enabled ? [data.aws_iam_policy_document.lpa_uid_ip_restriction_policy[0].json] : []
-  policy_id                 = "lpa-uid-${terraform.workspace}-${data.aws_region.current.name}-resource-policy"
+  policy_id                 = "lpa-uid-${terraform.workspace}-${data.aws_region.current.region}-resource-policy"
 
   statement {
     sid    = "${local.policy_region_prefix}AllowExecutionFromAllowedARNs"
