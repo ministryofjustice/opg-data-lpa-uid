@@ -9,14 +9,20 @@ data "aws_subnets" "private" {
   }
 
   filter {
-    name   = "tag:Name"
-    values = ["private-*"]
+    name = "tag:Name"
+    values = [
+      "application-*",
+      "private-*"
+    ]
   }
 }
 
 data "aws_vpc" "sirius" {
   filter {
-    name   = "tag:Name"
-    values = ["vpc.${data.aws_region.current.region}.${var.environment.account_name}.sirius.opg.service.justice.gov.uk"]
+    name = "tag:Name"
+    values = [
+      "Sirius-${var.environment.account_name}-vpc",
+      "vpc.${data.aws_region.current.region}.${var.environment.account_name}.sirius.opg.service.justice.gov.uk"
+    ]
   }
 }
