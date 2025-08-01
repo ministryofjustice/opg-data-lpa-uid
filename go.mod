@@ -51,7 +51,7 @@ require (
 	github.com/spf13/viper v1.20.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/vektra/mockery/v2 v2.53.4 // indirect
+	github.com/vektra/mockery/v3 v3.5.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
