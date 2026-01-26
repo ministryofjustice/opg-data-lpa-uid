@@ -193,7 +193,7 @@ resource "aws_cloudwatch_metric_alarm" "uid_service_4xx_error_anomaly" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "uid_service_high_request_rate" {
-  actions_enabled           = true
+  actions_enabled           = local.environment_name == "development" ? false : true
   alarm_actions             = [data.aws_sns_topic.cloudwatch_api.arn]
   alarm_description         = "An abnormally high rate of requests detected in the ${local.environment_name} UID service."
   alarm_name                = "${local.environment_name}-uid-service-high-request-rate"
