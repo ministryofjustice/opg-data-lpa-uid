@@ -14,6 +14,8 @@ jobs:
   test:
     name: Provider verification
     runs-on: ubuntu-latest
+    env:
+      BUILDX_NO_DEFAULT_ATTESTATIONS: 1
     steps:
       - uses: actions/checkout@v6
       - name: Setup terraform
