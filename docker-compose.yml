@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      provenance: false
     environment:
       AWS_REGION: eu-west-1
       AWS_BASE_URL: http://localstack:4566
