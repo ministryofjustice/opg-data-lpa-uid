@@ -76,7 +76,8 @@ trivy-scan: setup-directories
 	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
 
 tf-sec:
-	docker compose run --rm trivy filesystem --format table --exit-code 1 --scanners secret,misconfig --severity CRITICAL,HIGH,MEDIUM --output /test-results/trivy-tfsec.sarif ./terraform/
+	docker compose run --rm trivy filesystem --format table --exit-code 0 --scanners secret,misconfig --severity CRITICAL,HIGH,MEDIUM ./terraform/
+	docker compose run --rm trivy filesystem --format sarif --output /test-results/trivy-tfsec.sarif --exit-code 1 --scanners secret,misconfig --severity CRITICAL,HIGH,MEDIUM ./terraform/
 
 docker-lint:
 	docker compose run --rm trivy filesystem --format table --exit-code 1 --scanners secret,misconfig --severity CRITICAL,HIGH,MEDIUM ./Dockerfile
