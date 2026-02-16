@@ -20,29 +20,56 @@ jobs:
     env:
       BUILDX_NO_DEFAULT_ATTESTATIONS: 1
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: "0"
       - name: Image cache
-        uses: actions/cache@v5
+        uses: actions/cache@v5.0.3
         with:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
+
+      - name: Lint dockerfiles
+        id: docker_lint
+        run: |
+          make docker-lint
+
       - name: Build Images
         run: make build
-      - name: Trivy Image Vulnerability Scanner
-        uses: aquasecurity/trivy-action@0.33.1
+
+      - uses: unfor19/install-aws-cli-action@1.0.8
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
-          image-ref: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
-          format: "sarif"
-          output: "trivy-results.sarif"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::311462405659:role/integrations-ci
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+        with:
+          registries: 311462405659
+
+      - name: Trivy Image Vulnerability Scanner
+        id: trivy_scan
+        env:
+          TRIVY_DB_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
+          DOCKER_USERNAME: ${{ steps.login-ecr.outputs.docker_username_311462405659_dkr_ecr_eu_west_1_amazonaws_com }}
+          DOCKER_PASSWORD: ${{ steps.login-ecr.outputs.docker_password_311462405659_dkr_ecr_eu_west_1_amazonaws_com }}
+        run: |
+          make trivy-scan
       - name: Upload Trivy scan results to GitHub Security tab
         id: trivy_upload_sarif
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4.32.3
         if: always()
         with:
           category: "Docker"
-          sarif_file: "trivy-results.sarif"
+          sarif_file: "test-results/trivy.sarif"
       - name: Save Images
         run: |
           mkdir -p /tmp/images
@@ -58,10 +85,10 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: "0"
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v6.2.0
         with:
           go-version: 'stable'
       - name: Run unit tests
@@ -72,14 +99,14 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Image cache
-        uses: actions/cache@v5
+        uses: actions/cache@v5.0.3
         with:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
       - name: Setup terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v3.1.2
         with:
           terraform_version: 1.12.2
           terraform_wrapper: false
@@ -95,7 +122,7 @@ jobs:
       branch: ${{ steps.set-outputs.outputs.branch }}
       tag: ${{ steps.semver_tag.outputs.created_tag }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: "0"
       - name: Extract branch name
@@ -113,9 +140,9 @@ jobs:
           default_bump: minor
           releases_enabled: false
 
-      - uses: unfor19/install-aws-cli-action@v1
+      - uses: unfor19/install-aws-cli-action@1.0.8
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -126,12 +153,12 @@ jobs:
 
       - name: ECR Login
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@v2.0.1
         with:
           registries: 311462405659
 
       - name: Image cache
-        uses: actions/cache@v5
+        uses: actions/cache@v5.0.3
         with:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}

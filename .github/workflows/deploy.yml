@@ -25,16 +25,16 @@ jobs:
   terraform_environment_workflow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: "0"
       - uses: unfor19/install-aws-cli-action@v1
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3.1.2
         with:
           terraform_version: 1.12.2
           terraform_wrapper: false
       - name: Configure AWS Credentials For Terraform
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
