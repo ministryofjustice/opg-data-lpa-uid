@@ -2,15 +2,28 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
-  - repo: https://github.com/awslabs/git-secrets
-    rev: master
-    hooks:
-    - id: git-secrets
   - repo: https://github.com/zricethezav/gitleaks
-    rev: v8.8.4
+    rev: v8.30.0
     hooks:
     -   id: gitleaks
+  - repo: https://github.com/renovatebot/pre-commit-hooks
+    rev: 43.15.3
+    hooks:
+      - id: renovate-config-validator
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.105.0
+    hooks:
+      - id: terraform_fmt
+        args:
+          - --args=-recursive
+      - id: terraform_tflint
+        args:
+          - --args=--recursive
+      - id: terraform_trivy
+        args:
+          - --args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore
+          - --args=--severity=CRITICAL,HIGH,MEDIUM

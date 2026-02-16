@@ -17,3 +17,7 @@ docs/architecture/dsl/**/workspace.json
 /scripts/uid_tester/uid-tester
 /scripts/lambda/lambda.zip
 /scripts/localstack/init/localstack_api_urls.json
+
+# test output
+test-results
+.trivy-cache

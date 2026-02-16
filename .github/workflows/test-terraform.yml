@@ -45,15 +45,10 @@ jobs:
       - name: Run TFLint
         run: tflint --format compact --recursive
 
-      - name: Trivy Image Vulnerability Scanner
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          scan-ref: ./terraform/environment
-          scan-type: 'config'
-          hide-progress: true
-          format: 'sarif'
-          output: 'trivy-terraform-results.sarif'
-          exit-code: '1'
+      - name: Trivy tfsec
+        id: trivy_tfsec
+        run: |
+          make tf-sec
 
       - name: Upload Trivy scan results to GitHub Security tab
         id: trivy_upload_sarif
@@ -61,4 +56,4 @@ jobs:
         if: always()
         with:
           category: "Terraform"
-          sarif_file: "trivy-terraform-results.sarif"
+          sarif_file: "test-results/trivy-tfsec.sarif"

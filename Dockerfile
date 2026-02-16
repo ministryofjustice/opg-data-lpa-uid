@@ -10,8 +10,11 @@ COPY internal ./internal
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/main ./lambda/create-case
 
-FROM alpine:3
+FROM scratch
 
+COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build-env /go/bin/main /var/task/main
+
+USER 65532
 
 ENTRYPOINT [ "/var/task/main" ]

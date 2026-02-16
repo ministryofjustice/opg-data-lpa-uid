@@ -65,3 +65,18 @@ get-item:
 scan:
 	docker compose exec localstack \
 		awslocal dynamodb scan --table-name lpa-uid-local --region eu-west-1
+
+test-results:
+	mkdir -p -m 0777 test-results .trivy-cache
+
+setup-directories: test-results
+
+trivy-scan: setup-directories
+	docker compose run --rm trivy image --format table --exit-code 0 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
+	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
+
+tf-sec:
+	docker compose run --rm trivy filesystem --format table --exit-code 1 --scanners secret,misconfig --severity CRITICAL,HIGH,MEDIUM --output /test-results/trivy-tfsec.sarif ./terraform/
+
+docker-lint:
+	docker compose run --rm trivy filesystem --format table --exit-code 1 --scanners secret,misconfig --severity CRITICAL,HIGH,MEDIUM ./Dockerfile
