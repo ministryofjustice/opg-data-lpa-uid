@@ -51,7 +51,7 @@ services:
       - --provider-name=data-lpa-uid
 
   trivy:
-    image: aquasec/trivy:0.69.0
+    image: aquasec/trivy:0.69.1
     environment:
       - TRIVY_DB_REPOSITORY=${TRIVY_DB_REPOSITORY}
       - TRIVY_JAVA_DB_REPOSITORY=${TRIVY_JAVA_DB_REPOSITORY}
