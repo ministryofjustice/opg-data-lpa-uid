@@ -80,7 +80,7 @@ provider "aws" {
   region = "eu-west-1"
 
   assume_role {
-    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.default_role}"
+    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.shared_role}"
     session_name = "terraform-session"
   }
 
@@ -94,7 +94,7 @@ provider "aws" {
   region = "eu-west-2"
 
   assume_role {
-    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.default_role}"
+    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.shared_role}"
     session_name = "terraform-session"
   }
 
