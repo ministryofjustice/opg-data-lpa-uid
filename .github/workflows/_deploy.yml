@@ -3,6 +3,11 @@ name: "Deploy to Environment"
 on:
   workflow_call:
     inputs:
+      apply:
+        description: "Should the terraform changes be applied"
+        default: false
+        required: false
+        type: boolean
       workspace_name:
         description: "The terraform workspace to target for environment actions"
         required: true
@@ -64,7 +69,7 @@ jobs:
         working-directory: ./terraform/environment
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
+        if: inputs.apply == true
         env:
           TF_WORKSPACE: ${{ inputs.workspace_name }}
           TF_VAR_app_version: ${{ inputs.version_tag }}
