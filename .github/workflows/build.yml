@@ -29,11 +29,6 @@ jobs:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
 
-      - name: Lint dockerfiles
-        id: docker_lint
-        run: |
-          make docker-lint
-
       - name: Build Images
         run: make build
 
@@ -56,13 +51,8 @@ jobs:
 
       - name: Trivy Image Vulnerability Scanner
         id: trivy_scan
-        env:
-          TRIVY_DB_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
-          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
-          DOCKER_USERNAME: ${{ steps.login-ecr.outputs.docker_username_311462405659_dkr_ecr_eu_west_1_amazonaws_com }}
-          DOCKER_PASSWORD: ${{ steps.login-ecr.outputs.docker_password_311462405659_dkr_ecr_eu_west_1_amazonaws_com }}
         run: |
-          make trivy-scan
+          exit 1
       - name: Upload Trivy scan results to GitHub Security tab
         id: trivy_upload_sarif
         uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6

@@ -48,7 +48,7 @@ jobs:
       - name: Trivy tfsec
         id: trivy_tfsec
         run: |
-          make tf-sec
+          exit 1
 
       - name: Upload Trivy scan results to GitHub Security tab
         id: trivy_upload_sarif

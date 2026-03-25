@@ -20,4 +20,3 @@ docs/architecture/dsl/**/workspace.json
 
 # test output
 test-results
-.trivy-cache
