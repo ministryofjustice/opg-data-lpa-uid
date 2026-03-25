@@ -109,7 +109,6 @@ resource "aws_api_gateway_base_path_mapping" "mapping" {
   }
 }
 
-#trivy:ignore:AVD-AWS-0190
 resource "aws_api_gateway_method_settings" "lpa_uid_gateway_settings" {
   rest_api_id = aws_api_gateway_rest_api.lpa_uid.id
   stage_name  = aws_api_gateway_stage.current.stage_name

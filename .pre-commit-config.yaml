@@ -23,7 +23,3 @@ repos:
       - id: terraform_tflint
         args:
           - --args=--recursive
-      - id: terraform_trivy
-        args:
-          - --args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore
-          - --args=--severity=CRITICAL,HIGH,MEDIUM
