@@ -1,0 +1,95 @@
+name: Test & Build
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/_build.yml
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      snyk_token: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
+
+  test-terraform:
+    name: Test Terraform
+    uses: ./.github/workflows/_test-terraform.yml
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: "0"
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: 'stable'
+      - name: Run unit tests
+        run: make test
+
+  integration-test:
+    name: Integration test
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Image cache
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: /tmp/images
+          key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        with:
+          terraform_version: 1.12.2
+          terraform_wrapper: false
+      - name: Restore Image
+        run: docker load -i /tmp/images/lambda-create-case.tar
+      - run: make up test-api
+
+  push:
+    name: Push images
+    needs: [test, integration-test, test-terraform]
+    uses: ./.github/workflows/_push.yml
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  plan-environment:
+    strategy:
+      matrix:
+        include:
+          - workspace_name: development
+            oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
+            default_role: ${{ vars.DEVELOPMENT_ROLE }}
+            management_role: ${{ vars.MANAGEMENT_ROLE }}
+            shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
+          - workspace_name: preproduction
+            oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
+            default_role: ${{ vars.PREPRODUCTION_PULL_REQUEST_ROLE }}
+            management_role: ${{ vars.MANAGEMENT_ROLE }}
+            shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
+    name: "Terraform Plan Environment: ${{ matrix.workspace_name }}"
+    needs: 
+      - push
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      apply: false
+      workspace_name: ${{ matrix.workspace_name }}
+      oidc_role: ${{ matrix.oidc_role }}
+      default_role: ${{ matrix.default_role }}
+      management_role: ${{ matrix.management_role }}
+      shared_role: ${{ matrix.shared_role }}
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}

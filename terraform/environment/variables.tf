@@ -46,3 +46,8 @@ variable "management_role" {
   default = "integrations-ci"
   type    = string
 }
+
+variable "shared_role" {
+  default = "integrations-ci"
+  type    = string
+}

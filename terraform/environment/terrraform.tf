@@ -1,13 +1,13 @@
 terraform {
   backend "s3" {
-    bucket         = "opg.terraform.state"
-    key            = "opg-data-lpa-uid/terraform.tfstate"
-    encrypt        = true
-    region         = "eu-west-1"
-    dynamodb_table = "remote_lock"
     assume_role = {
-      role_arn = "arn:aws:iam::311462405659:role/integrations-ci"
+      role_arn = "arn:aws:iam::311462405659:role/opg-data-lpa-uid-terraform-state-access"
     }
+    bucket       = "opg.terraform.state"
+    encrypt      = true
+    key          = "opg-data-lpa-uid/terraform.tfstate"
+    region       = "eu-west-1"
+    use_lockfile = true
   }
 
   required_providers {
@@ -80,7 +80,7 @@ provider "aws" {
   region = "eu-west-1"
 
   assume_role {
-    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.default_role}"
+    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.shared_role}"
     session_name = "terraform-session"
   }
 
@@ -94,7 +94,7 @@ provider "aws" {
   region = "eu-west-2"
 
   assume_role {
-    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.default_role}"
+    role_arn     = "arn:aws:iam::${local.environment.shared_account_id}:role/${var.shared_role}"
     session_name = "terraform-session"
   }
 
