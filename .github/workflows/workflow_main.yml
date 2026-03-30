@@ -70,7 +70,7 @@ jobs:
     uses: ./.github/workflows/_deploy.yml
     with:
       workspace_name: development
-      apply: false
+      apply: true
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       default_role: ${{ vars.DEVELOPMENT_ROLE }}
       management_role: ${{ vars.MANAGEMENT_ROLE }}
@@ -86,7 +86,7 @@ jobs:
     uses: ./.github/workflows/_deploy.yml
     with:
       workspace_name: preproduction
-      apply: false
+      apply: true
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       default_role: ${{ vars.PREPRODUCTION_MAIN_ROLE }}
       management_role: ${{ vars.MANAGEMENT_ROLE }}
@@ -102,7 +102,7 @@ jobs:
     uses: ./.github/workflows/_deploy.yml
     with:
       workspace_name: demo
-      apply: false
+      apply: true
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       default_role: ${{ vars.DEVELOPMENT_ROLE }}
       management_role: ${{ vars.MANAGEMENT_ROLE }}
