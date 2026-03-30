@@ -1,9 +1,9 @@
-name: "Lint & Security Test Terraform"
+name: "Lint Terraform"
 
 on:
   workflow_call:
     secrets:
-      github_token_secret:
+      github_access_token:
         required: true
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         run: tflint --init
         env:
           # https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/plugins.md#avoiding-rate-limiting
-          GITHUB_TOKEN: ${{ secrets.github_token_secret }}
+          GITHUB_TOKEN: ${{ secrets.github_access_token }}
 
       - name: Terraform FMT
         run: terraform fmt -check -recursive

@@ -6,7 +6,7 @@ terraform {
     region         = "eu-west-1"
     dynamodb_table = "remote_lock"
     assume_role = {
-      role_arn = "arn:aws:iam::311462405659:role/integrations-ci"
+      role_arn = "arn:aws:iam::311462405659:role/opg-data-lpa-uid-terraform-state-access"
     }
   }
 
