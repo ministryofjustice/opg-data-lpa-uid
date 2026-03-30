@@ -1,7 +1,7 @@
 name: Test & Build
 
 on:
-  pull_request:
+  push:
     branches:
       - main
   workflow_dispatch:
@@ -20,7 +20,7 @@ jobs:
 
   test-terraform:
     name: Test Terraform
-    uses: ./.github/workflows/_test-terraform.yml
+    uses: ./.github/workflows/test-terraform.yml
     secrets:
       github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,32 +64,50 @@ jobs:
     secrets:
       github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-  plan-environment:
-    strategy:
-      matrix:
-        include:
-          - workspace_name: development
-            oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
-            default_role: ${{ vars.DEVELOPMENT_ROLE }}
-            management_role: ${{ vars.MANAGEMENT_ROLE }}
-            shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
-          - workspace_name: preproduction
-            oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
-            default_role: ${{ vars.PREPRODUCTION_PULL_REQUEST_ROLE }}
-            management_role: ${{ vars.MANAGEMENT_ROLE }}
-            shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
-    name: "Terraform Plan Environment: ${{ matrix.workspace_name }}"
-    needs: 
-      - push
+  deploy-development:
+    name: Deploy to Development
+    needs: [push]
     uses: ./.github/workflows/_deploy.yml
     with:
+      workspace_name: development
       apply: false
-      workspace_name: ${{ matrix.workspace_name }}
-      oidc_role: ${{ matrix.oidc_role }}
-      default_role: ${{ matrix.default_role }}
-      management_role: ${{ matrix.management_role }}
-      shared_role: ${{ matrix.shared_role }}
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      default_role: ${{ vars.DEVELOPMENT_ROLE }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
       version_tag: ${{ needs.push.outputs.tag }}
     secrets:
-      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
       github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+
+  deploy-preproduction:
+    name: Deploy to Preproduction
+    needs: [push, deploy-development]
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      workspace_name: preproduction
+      apply: false
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      default_role: ${{ vars.PREPRODUCTION_MAIN_ROLE }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+
+  deploy-demo:
+    name: Deploy to Demo
+    needs: [push, deploy-preproduction]
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      workspace_name: demo
+      apply: false
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      default_role: ${{ vars.DEVELOPMENT_ROLE }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
+      version_tag: ${{ needs.push.outputs.tag }}
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}

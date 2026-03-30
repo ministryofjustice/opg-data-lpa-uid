@@ -66,7 +66,5 @@ scan:
 	docker compose exec localstack \
 		awslocal dynamodb scan --table-name lpa-uid-local --region eu-west-1
 
-test-results:
+setup-directories:
 	mkdir -p -m 0777 test-results
-
-setup-directories: test-results
