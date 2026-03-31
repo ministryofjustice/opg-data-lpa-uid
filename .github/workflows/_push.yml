@@ -48,10 +48,10 @@ jobs:
         id: extract_branch
       - name: Bump version
         id: semver_tag
-        uses: ministryofjustice/opg-github-actions/.github/actions/semver-tag@ea1e81f43e7593acd74cc114085930f5f54914a2 # v3.1.7
+        uses: ministryofjustice/opg-github-actions/actions/semver@b605e1e2c94b399e8139c4c2be2c8730700e0004 #v4.5.2
         with:
           default_bump: minor
-          releases_enabled: false
+          create_release: false
 
       - uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
       - name: Configure AWS Credentials
