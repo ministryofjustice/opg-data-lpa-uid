@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.set-outputs.outputs.branch }}
-      tag: ${{ steps.semver_tag.outputs.created_tag }}
+      tag: ${{ steps.semver_tag.outputs.tag }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -48,10 +48,10 @@ jobs:
         id: extract_branch
       - name: Bump version
         id: semver_tag
-        uses: ministryofjustice/opg-github-actions/.github/actions/semver-tag@ea1e81f43e7593acd74cc114085930f5f54914a2 # v3.1.7
+        uses: ministryofjustice/opg-github-actions/actions/semver@b605e1e2c94b399e8139c4c2be2c8730700e0004 #v4.5.2
         with:
           default_bump: minor
-          releases_enabled: false
+          create_release: false
 
       - uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
       - name: Configure AWS Credentials
@@ -81,14 +81,13 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: integrations/lpa-uid-create-case-lambda
         run: |
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.semver_tag.outputs.created_tag }}
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.semver_tag.outputs.tag }}
           if [ $BRANCH_NAME == "main" ]; then
             docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:main
             # We want all of the tags pushed
             docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
           else
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.semver_tag.outputs.created_tag }}
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.semver_tag.outputs.tag }}
           fi
 
-          echo "Container tag: ${{ steps.semver_tag.outputs.created_tag }}" >> $GITHUB_STEP_SUMMARY
-
+          echo "Container tag: ${{ steps.semver_tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
