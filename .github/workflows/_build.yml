@@ -5,7 +5,7 @@ permissions:
   checks: read
   contents: read
   deployments: none
-  id-token: none
+  id-token: write
   issues: none
   packages: none
   pull-requests: none
@@ -44,9 +44,23 @@ jobs:
       - name: Debug
         run: docker image ls
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ vars.OIDC_MANAGEMENT_ECR_ROLE }}
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2.0.2
+        with:
+          registries: 311462405659
+
       - name: Snyk Scan
         id: snyk_scan
-        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@8dea82fc8b8e7ffca431f0fb83848d523147ccd8 # v4.5.0
+        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@SP-3628
         with:
           SNYK_TEST_IMAGE: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
           SNYK_TOKEN: ${{ secrets.snyk_token }}
@@ -58,9 +72,8 @@ jobs:
         with:
           category: "Docker"
           sarif_file: "test-results/snyk.sarif"
-          
+
       - name: Save Images
         run: |
           mkdir -p /tmp/images
           docker save -o /tmp/images/lambda-create-case.tar 311462405659.dkr.ecr.eu-west-1.amazonaws.com/integrations/lpa-uid-create-case-lambda:latest
-

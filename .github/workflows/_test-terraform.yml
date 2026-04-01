@@ -1,9 +1,25 @@
 name: "Lint Terraform"
 
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  deployments: none
+  id-token: write
+  issues: none
+  packages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: write
+  statuses: none
+
 on:
   workflow_call:
     secrets:
       github_access_token:
+        required: true
+      snyk_token:
+        description: "Snyk Token"
         required: true
 
 jobs:
@@ -45,11 +61,26 @@ jobs:
       - name: Run TFLint
         run: tflint --format compact --recursive
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ vars.OIDC_MANAGEMENT_ECR_ROLE }}
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2.0.2
+        with:
+          registries: 311462405659
+
       - name: Snky IAC
         id: snyk_iac
-        run: echo "::warning title=MISSING-IAC-SCAN::Pleas add the snyk iac scan composite action when it is available."
-
-      # TODO: Add Snyk IAC scan and upload results to GitHub Security tab when the composite action is available.
+        uses: ministryofjustice/opg-github-actions/actions/snyk-iac@SP-3628
+        with:
+          iac_test_directory: "./terraform/environment/"
+          SNYK_TOKEN: ${{ secrets.snyk_token }}
 
       # - name: Upload Snyk IAC scan results to GitHub Security tab
       #   id: snyk_upload_sarif

@@ -23,6 +23,7 @@ jobs:
     uses: ./.github/workflows/_test-terraform.yml
     secrets:
       github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      snyk_token: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
 
   test:
     name: Test
@@ -79,7 +80,7 @@ jobs:
             management_role: ${{ vars.MANAGEMENT_ROLE }}
             shared_role: ${{ vars.SHARED_DEVELOPMENT_ROLE }}
     name: "Terraform Plan Environment: ${{ matrix.workspace_name }}"
-    needs: 
+    needs:
       - push
     uses: ./.github/workflows/_deploy.yml
     with:
