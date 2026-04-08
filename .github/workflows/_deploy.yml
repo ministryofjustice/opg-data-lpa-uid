@@ -74,8 +74,6 @@ jobs:
         with:
           fetch-depth: "0"
 
-      - uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # v1
-
       - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
         with:
           terraform_version: 1.12.2
@@ -90,9 +88,10 @@ jobs:
           role-session-name: OPGDataLpaUIDGithubAction
 
       - name: Setup SSH private key
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        id: deploy-key
+        uses: ministryofjustice/opg-github-actions/actions/github-deploy-key@a2907c7c7be94301c965ace76a2cfa407ad6fc88 # v4.6.0
         with:
-          ssh-private-key: ${{ secrets.ssh_private_key_allow_list_repository }}
+          deploy_key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
       - name: Terraform Init
         working-directory: ./terraform/environment
