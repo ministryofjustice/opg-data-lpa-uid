@@ -80,6 +80,7 @@ jobs:
         uses: ministryofjustice/opg-github-actions/actions/snyk-iac@ceeda9d30ec7f6705c819d0b7664b9a79df99a3b # v4.8.0
         with:
           iac_test_directory: "./terraform/environment/"
+          sarif_filename: "snyk-iac.sarif"
           SNYK_TOKEN: ${{ secrets.snyk_token }}
 
       - name: Upload Snyk IAC scan results to GitHub Security tab
