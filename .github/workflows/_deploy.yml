@@ -89,7 +89,7 @@ jobs:
 
       - name: Setup SSH private key
         id: deploy-key
-        uses: ministryofjustice/opg-github-actions/actions/github-deploy-key@a2907c7c7be94301c965ace76a2cfa407ad6fc88 # v4.6.0
+        uses: ministryofjustice/opg-github-actions/actions/github-deploy-key@3a15a16fcc221821c2869eecd8822c5d62af2984 # v4.7.0
         with:
           deploy_key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
