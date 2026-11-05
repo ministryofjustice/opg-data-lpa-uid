@@ -6,10 +6,10 @@ services:
       dockerfile: Dockerfile
     environment:
       AWS_REGION: eu-west-1
-      AWS_BASE_URL: http://localstack:4566
+      AWS_BASE_URL: http://ministack:4566
       AWS_DYNAMODB_TABLE_NAME: lpa-uid-local
-      AWS_ACCESS_KEY_ID: localstack
-      AWS_SECRET_ACCESS_KEY: localstack
+      AWS_ACCESS_KEY_ID: ministack
+      AWS_SECRET_ACCESS_KEY: ministack
       DEBUG: 1
       EVENT_BUS_NAME: "default"
       ENVIRONMENT: "local"
@@ -17,24 +17,19 @@ services:
       - "./lambda/.aws-lambda-rie:/aws-lambda"
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
 
-  localstack:
-    build: scripts/localstack
-    container_name: lpa-uid-localstack
+  ministack:
+    build: scripts/ministack
+    container_name: lpa-uid-ministack
     depends_on: [lambda-create-case]
     ports:
       - "4566:4566"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./scripts/localstack/init:/etc/localstack/init/ready.d"
-      - "./scripts/localstack/init:/scripts/localstack/init"
+      - "./scripts/ministack/init:/docker-entrypoint-initaws.d/ready.d"
+      - "./scripts/ministack/init:/scripts/ministack/init"
       - "./scripts/lambda/forwarder.py:/scripts/lambda/forwarder.py"
       - "./docs/openapi/openapi.yaml:/docs/openapi/openapi.yaml"
-    networks:
-      default:
-        aliases:
-          - "lpauid.execute-api.localhost.localstack.cloud"
     healthcheck:
-      test: ["CMD-SHELL", "curl -s localhost:4566/_localstack/init | jq .completed.READY | grep true || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4566/_ministack/ready')"]
       interval: 15s
       timeout: 10s
       retries: 3
@@ -44,8 +39,8 @@ services:
     image: pactfoundation/pact-verifier:1.3.5@sha256:816dc75dc50f653cb960c9a88100563b0a54b90400386af7507de425ea1c3c91
     entrypoint:
       - pact-verifier
-      - --hostname=lpauid.execute-api.localhost.localstack.cloud
+      - --hostname=ministack
       - --port=4566
-      - --base-path=/current/
+      - --base-path=/restapis/lpauid/current/_user_request_/
       - --broker-url=https://pact-broker.api.opg.service.justice.gov.uk/
       - --provider-name=data-lpa-uid

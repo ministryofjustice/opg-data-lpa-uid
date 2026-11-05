@@ -51,7 +51,7 @@ create_regional_services() {
     export api=$(awslocal apigateway create-rest-api \
       --name "lpauid" \
       --region $REGION \
-      --tags '{"_custom_id_":"'$ID'"}')
+      --tags '{"ms-custom-id":"'$ID'"}')
 
     export openapi=$(awslocal apigateway put-rest-api \
       --mode overwrite \
