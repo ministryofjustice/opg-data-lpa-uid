@@ -4,7 +4,7 @@ build:
 	docker compose build --parallel lambda-create-case
 
 up:
-	docker compose up -d --wait localstack
+	docker compose up -d --wait ministack
 
 generate:
 	git ls-files | grep '.*/mock_.*_test\.go' | xargs rm -f
@@ -21,23 +21,23 @@ test-api-eu-west-1 test-api-eu-west-2:
 		$(URL)/health
 	@echo ""
 
-test-api-eu-west-1: URL=http://lpauid.execute-api.localhost.localstack.cloud:4566/current
-test-api-eu-west-2: URL=http://lpauid_eu_west_2.execute-api.localhost.localstack.cloud:4566/current
+test-api-eu-west-1: URL=http://localhost:4566/restapis/lpauid/current/_user_request_
+test-api-eu-west-2: URL=http://localhost:4566/restapis/lpauid_eu_west_2/current/_user_request_
 
 test-api:
 	@SUCCESS=false; \
 	COUNT=0; \
 	while [ $${SUCCESS} == false ] && [ $${COUNT} -lt 6 ]; do \
-		docker inspect -f {{.State.Health.Status}} lpa-uid-localstack | grep -q healthy; \
+		docker inspect -f {{.State.Health.Status}} lpa-uid-ministack | grep -q healthy; \
 		if [ $$? -eq 0 ]; then \
 			SUCCESS=true; \
 		else \
-			echo "Localstack not healthy, retrying in 10 seconds"; \
+			echo "MiniStack not healthy, retrying in 10 seconds"; \
 			COUNT=`expr $$COUNT + 1`; \
 			sleep 10; \
 		fi; \
 		if [ $$COUNT -eq 6 ]; then \
-			echo "Localstack was not healthy in time"; \
+			echo "MiniStack was not healthy in time"; \
 			exit 1; \
 		fi \
 	done; \
@@ -59,11 +59,11 @@ run-structurizr-export:
 	export -workspace /usr/local/structurizr/workspace.dsl -format mermaid
 
 get-item:
-	docker compose exec localstack \
+	docker compose exec ministack \
 		awslocal dynamodb get-item --table-name lpa-uid-local --key '{"uid":{"S":"$(UID)"}}' --region eu-west-1
 
 scan:
-	docker compose exec localstack \
+	docker compose exec ministack \
 		awslocal dynamodb scan --table-name lpa-uid-local --region eu-west-1
 
 setup-directories:
