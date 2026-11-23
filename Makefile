@@ -68,3 +68,6 @@ scan:
 
 setup-directories:
 	mkdir -p -m 0777 test-results
+
+gosec: setup-directories
+	docker compose run --rm gosec
