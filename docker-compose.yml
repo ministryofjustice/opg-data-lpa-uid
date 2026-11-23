@@ -36,7 +36,7 @@ services:
       start_period: 30s
 
   pact-verifier:
-    image: pactfoundation/pact-verifier:1.3.5@sha256:816dc75dc50f653cb960c9a88100563b0a54b90400386af7507de425ea1c3c91
+    image: pactfoundation/pact-verifier:1.5.0@sha256:1aeaeb83b3873c731c1891c10583255d067d61c0a9bd545d3e5accf261c7f73e
     entrypoint:
       - pact-verifier
       - --hostname=ministack
