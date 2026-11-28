@@ -1,3 +1,3 @@
-FROM ministackorg/ministack:1.5.37@sha256:cdfa6ba04f4c7febd9e14a34a21e31b9f0fb5279ee6af545784c05219f5a59a4 AS app
+FROM ministackorg/ministack:1.5.43@sha256:4cc0701953855c59e1a18fa289888f0b7f2d99afe1417c3cc3b7fe43c373c771 AS app
 
 RUN apk add --no-cache jq gettext zip
